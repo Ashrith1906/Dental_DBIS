@@ -39,7 +39,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (isValidJSON(storedUser)) {
-      setUserRole(JSON.parse(storedUser)?.role || null);
+      const parsedUser = JSON.parse(storedUser);
+      setUserRole(parsedUser?.role || null);
     }
   }, []);
 

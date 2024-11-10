@@ -41,7 +41,7 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    console.log("Logged in user:", user); 
+    console.log("Logged in user:", user);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -58,7 +58,18 @@ exports.login = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.status(200).json({ token, message: "Login successful" });
+    // Send both user and token in a single json response
+    res.status(200).json({
+      user: {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+        dentistId: user.dentistId,
+        receptionistId: user.receptionistId,
+      },
+      token, // Include the token here
+      message: "Login successful",
+    });
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error: error.message });
   }

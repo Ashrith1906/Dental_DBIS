@@ -16,8 +16,8 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("");
-  const [doctorId, setDoctorId] = useState("");
-  const [receptionistId, setReceptionistId] = useState("");
+  // const [dentistId, setDentistId] = useState("");
+  // const [receptionistId, setReceptionistId] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
@@ -40,13 +40,12 @@ const Register = () => {
     }
 
     try {
-      // Dynamically add doctorId or receptionistId based on the role
+      // Dynamically add dentistId or receptionistId based on the role
       const payload = {
         email,
         password,
         confirm_password: confirmPassword,
         role,
-        ...(role === "Doctor" ? { doctorId } : { receptionistId }),
       };
 
       const response = await axios.post(
@@ -181,36 +180,10 @@ const Register = () => {
                 className="w-full p-3 focus:outline-none"
               >
                 <option value="">Select Role</option>
-                <option value="Doctor">Dentist</option>
-                <option value="receptionist">Reception</option>
+                <option value="Dentist">Dentist</option>
+                <option value="Receptionist">Receptionist</option>
               </select>
             </div>
-          </div>
-          <div>
-            {role && (
-              <div>
-                <label className="text-gray-900 font-semibold">
-                  {role === "Doctor" ? "Doctor ID" : "Receptionist ID"}
-                </label>
-                <div className="flex items-center border border-gray-300 rounded-lg">
-                  <FaUser className="ml-3" />
-                  <input
-                    type="text"
-                    value={role === "Doctor" ? doctorId : receptionistId}
-                    onChange={(e) =>
-                      role === "Doctor"
-                        ? setDoctorId(e.target.value)
-                        : setReceptionistId(e.target.value)
-                    }
-                    placeholder={
-                      role === "Doctor" ? "Doctor ID" : "Receptionist ID"
-                    }
-                    autoComplete="off"
-                    className="w-full p-3 focus:outline-none focus:bg-white focus:ring-0 placeholder-gray-500"
-                  />
-                </div>
-              </div>
-            )}
           </div>
           <button
             type="submit"

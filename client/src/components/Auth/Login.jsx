@@ -27,6 +27,7 @@ const Login = () => {
       const user = response.data.user;
       const token = response.data.token;
       console.log(token);
+      console.log(user);
       localStorage.setItem("token", JSON.stringify(token)); // Store token
       login(user); // Use context to handle login and redirection
 

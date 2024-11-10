@@ -17,7 +17,7 @@ exports.createPatient = async (req, res) => {
 
     if (!dentistExists) {
       return res.status(400).json({
-        message: `Dentist with ID ${dentistId} does not exist`
+        message: `Dentist Profile with ID ${dentistId} does not exist`
       });
     }
 
