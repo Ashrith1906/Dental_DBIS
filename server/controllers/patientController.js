@@ -1,23 +1,23 @@
 const Patient = require("../models/patientModel");
-const Doctor = require("../models/dentistModel");
+const Dentist = require("../models/dentistModel");
 
 // Create a new patient
 exports.createPatient = async (req, res) => {
   try {
-    const { name, dob, age, gender, phone_no, past_history, current_status, address , doctorId} = req.body;
+    const { name, dob, age, gender, phone_no, past_history, current_status, address , dentistId} = req.body;
 
     // Validate required fields
-    if (!name || !dob || !age || !gender || !phone_no || !past_history || !current_status || !address || !doctorId) {
+    if (!name || !dob || !age || !gender || !phone_no || !past_history || !current_status || !address || !dentistId) {
       return res.status(400).json({
         message: "Please provide all required fields: name, dob, age, gender, phone_no, past_history, current_status, address"
       });
     }
 
-    const doctorExists = await Doctor.findOne({ dentistId: doctorId });
+    const dentistExists = await Dentist.findOne({ dentistId: dentistId });
 
-    if (!doctorExists) {
+    if (!dentistExists) {
       return res.status(400).json({
-        message: `Doctor with ID ${doctorId} does not exist`
+        message: `Dentist with ID ${dentistId} does not exist`
       });
     }
 
@@ -32,7 +32,7 @@ exports.createPatient = async (req, res) => {
       past_history,
       current_status,
       address,
-      doctorId
+      dentistId
     });
 
     // Save the new patient to the database

@@ -1,9 +1,11 @@
 // server/routes/profileRoute.js
 const express = require('express');
-const { createDoctorProfile, createReceptionistProfile } = require('../controllers/profileController');
+const { createDentistProfile, createReceptionistProfile,createDentistSchedule } = require('../controllers/profileController');
 const router = express.Router();
 
-router.post('/doctor', createDoctorProfile);
+router.post('/dentist', createDentistProfile);
+
+router.post('/createDentistSchedule',createDentistSchedule)
 
 router.post('/receptionist', createReceptionistProfile);
 

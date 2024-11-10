@@ -32,9 +32,9 @@ const staffSchema = new mongoose.Schema({
     unique: true,
     match: [/.+\@.+\..+/, 'Please fill a valid email address']
   },
-  doctor: {
+  dentist: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Dentist',  // Reference to the doctor who manages this staff member
+    ref: 'Dentist',  // Reference to the dentist who manages this staff member
     required: true
   }
 });
