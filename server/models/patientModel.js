@@ -1,9 +1,9 @@
+// server/models/patientModel.js
 const mongoose = require('mongoose');
-const Counter = require('./counterModel');  // Import the Counter model
 
 const patientSchema = new mongoose.Schema({
   pID: {
-    type: Number,
+    type: String,  // Store pID as a string to include the prefix
     unique: true
   },
   name: {
@@ -47,23 +47,48 @@ const patientSchema = new mongoose.Schema({
     required: true,
     maxlength: 100
   },
-  doctorId: {
-    type: String,  // Using a string for doctorId like "d004"
+  dentistId: {
+    type: String,  // Using a string for dentistId like "d004"
     required: true
   }
 });
+// Helper function to generate the next sequential pID
+async function generateNextPatientId() {
+  try {
+    // Find the patient with the highest pID
+    const latestPatient = await mongoose.model('Patient').findOne()
+      .sort({ pID: -1 }) // Sort descending by pID
+      .select('pID'); // Only return pID field
 
-// Pre-save hook to generate an auto-incremented pID
+    // If there are existing patients
+    if (latestPatient && latestPatient.pID) {
+      const latestId = latestPatient.pID;
+      // Check if the ID format is correct (should start with 'p' followed by numbers)
+      if (/^p\d{3}$/.test(latestId)) {
+        const numericPart = parseInt(latestId.slice(1), 10); // Extract numeric part from pID
+        const nextId = 'p' + String(numericPart + 1).padStart(3, '0'); // Increment and pad to 3 digits
+        console.log(`Generated next pID: ${nextId}`);
+        return nextId;
+      } else {
+        throw new Error('Invalid pID format in existing data');
+      }
+    } else {
+      // Start sequence if no patients exist
+      console.log('Starting pID sequence');
+      return 'p001'; // First patient
+    }
+  } catch (error) {
+    console.error('Error generating pID:', error.message);
+    throw error;
+  }
+}
+
+// Pre-save hook to generate the pID before saving the patient
 patientSchema.pre('save', async function(next) {
   if (this.isNew) {
     try {
-      // Find the counter and increment its sequence
-      const counter = await Counter.findOneAndUpdate(
-        { name: 'patient' },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-      );
-      this.pID = counter.seq;  // Set the pID to the incremented sequence
+      // Generate a sequential pID
+      this.pID = await generateNextPatientId();
       next();
     } catch (error) {
       next(error);

@@ -6,6 +6,7 @@ const cors = require("cors");
 const userRoutes = require("./routes/userRoute");
 const profileRoutes = require("./routes/profileRoute"); 
 const patientRoutes = require("./routes/patientRoute");
+const appointmentRoutes = require("./routes/appointmentRoute");
 
 const app = express();
 env.config();
@@ -26,6 +27,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/patient',patientRoutes)
+app.use('/api/appointment',appointmentRoutes)
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);

@@ -16,5 +16,6 @@ router.post("/create", createPatient);
 
 router.get("/list", getAllPatients);
 
+router.post("/update", updatePatient);
 
 module.exports = router;

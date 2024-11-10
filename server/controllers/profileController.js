@@ -2,21 +2,22 @@
 const Dentist = require("../models/dentistModel");
 const Reception = require("../models/receptionModel");
 const User = require("../models/userModel");
+const DentistSchedule = require('../models/dentistScheduleModel');
 
-exports.createDoctorProfile = async (req, res) => {
-  const { doctorId, name, specialization, phone_no, experience } = req.body;
+exports.createDentistProfile = async (req, res) => {
+  const { dentistId, name, specialization, phone_no, experience } = req.body;
 
   try {
-    // Find the user by doctorId
-    const user = await User.findOne({ doctorId });
-    if (!user || user.role !== "Doctor") {
+    // Find the user by dentistId
+    const user = await User.findOne({ dentistId });
+    if (!user || user.role !== "Dentist") {
       return res
         .status(404)
-        .json({ message: "User not found or not a doctor" });
+        .json({ message: "User not found or not a dentist" });
     }
 
     // Check if a dentist profile already exists
-    let dentistProfile = await Dentist.findOne({ dentistId: doctorId });
+    let dentistProfile = await Dentist.findOne({ dentistId: dentistId });
 
     if (dentistProfile) {
       // Update existing profile
@@ -28,13 +29,13 @@ exports.createDoctorProfile = async (req, res) => {
 
       await dentistProfile.save(); // Save the updated profile
       return res.status(200).json({
-        message: "Doctor profile updated successfully",
+        message: "Dentist profile updated successfully",
         dentistProfile,
       });
     } else {
       // Create a new dentist profile
       dentistProfile = new Dentist({
-        dentistId: doctorId, // Use doctorId as dentistId
+        dentistId: dentistId, // Use dentistId as dentistId
         name,
         specialization,
         phone_no,
@@ -44,13 +45,13 @@ exports.createDoctorProfile = async (req, res) => {
 
       await dentistProfile.save(); // Save the new profile
       return res.status(201).json({
-        message: "Doctor profile created successfully",
+        message: "Dentist profile created successfully",
         dentistProfile,
       });
     }
   } catch (error) {
     res.status(500).json({
-      message: "Error creating or updating doctor profile",
+      message: "Error creating or updating dentist profile",
       error: error.message,
     });
   }
@@ -105,6 +106,39 @@ exports.createReceptionistProfile = async (req, res) => {
     res.status(500).json({
       message: "Error creating or updating receptionist profile",
       error: error.message,
+    });
+  }
+};
+
+exports.createDentistSchedule = async (req, res) => {
+  try {
+    const { dentistId, availableTime } = req.body;
+
+    // If you're using dentistId as a string, you don't need to check for ObjectId
+    // You can validate that the dentist exists based on the string ID
+    const dentist = await Dentist.findOne({ dentistId: dentistId });
+    if (!dentist) {
+      return res.status(404).json({
+        message: `Dentist with ID ${dentistId} does not exist`
+      });
+    }
+
+    // Create new dentist schedule
+    const newSchedule = new DentistSchedule({
+      dentistId,
+      availableTime
+    });
+
+    await newSchedule.save();
+    res.status(201).json({
+      message: "Dentist schedule created successfully",
+      schedule: newSchedule
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Error creating dentist schedule",
+      error: error.message
     });
   }
 };
