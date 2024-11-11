@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-const Navbar = () => {
+const DentistNavbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const location = useLocation(); // Get current location
   
@@ -18,22 +18,22 @@ const Navbar = () => {
           <div className="text-lg font-bold">Smile</div>
           <div className="hidden md:flex space-x-8">
             <Link
-              to="/receptionist"
+              to="/dentist"
               className={`py-2 transition duration-200 ${
-                isActive("/receptionist") ? "underline" : "hover:text-gray-300"
+                isActive("/dentist") ? "underline" : "hover:text-gray-300"
               }`}
             >
               Home
             </Link>
             <Link
-              to="/patient-profile"
+              to="/dentist-profile"
               className={`py-2 transition duration-200 ${
-                isActive("/patient-profile") ? "underline" : "hover:text-gray-300"
+                isActive("/dentist-profile") ? "underline" : "hover:text-gray-300"
               }`}
             >
-              Patient Profile
+              Profile
             </Link>
-            <Link
+            {/* <Link
               to="/invoice"
               className={`py-2 transition duration-200 ${
                 isActive("/invoice") ? "underline" : "hover:text-gray-300"
@@ -48,7 +48,7 @@ const Navbar = () => {
               }`}
             >
               Reports
-            </Link>
+            </Link> */}
             <Link
               to="/"
               className="bg-red-500 px-5 py-2 rounded-md hover:bg-red-400 transition duration-200"
@@ -79,20 +79,20 @@ const Navbar = () => {
                 <Link
                   to="/dentist"
                   className={`block px-6 py-3 transition duration-200 ${
-                    isActive("/receptionist") ? "underline" : "hover:bg-gray-600"
+                    isActive("/dentist") ? "underline" : "hover:bg-gray-600"
                   }`}
                 >
                   Home
                 </Link>
                 <Link
-                  to="/patient-profile"
+                  to="/dentist-profile"
                   className={`block px-6 py-3 transition duration-200 ${
-                    isActive("/patient-profile") ? "underline" : "hover:bg-gray-600"
+                    isActive("/dentist-profile") ? "underline" : "hover:bg-gray-600"
                   }`}
                 >
-                  Patient Profile
+                Profile
                 </Link>
-                <Link
+                {/* <Link
                   to="/invoice"
                   className={`block px-6 py-3 transition duration-200 ${
                     isActive("/invoice") ? "underline" : "hover:bg-gray-600"
@@ -107,7 +107,7 @@ const Navbar = () => {
                   }`}
                 >
                   Reports
-                </Link>
+                </Link> */}
                 <Link
                   to="/"
                   className="block px-6 py-3 bg-red-500 rounded-b-md hover:bg-red-400 transition duration-200"
@@ -123,4 +123,4 @@ const Navbar = () => {
   };
   
 
-export default Navbar
+export default DentistNavbar

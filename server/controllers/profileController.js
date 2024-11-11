@@ -8,16 +8,12 @@ exports.createDentistProfile = async (req, res) => {
   const { dentistId, name, specialization, phone_no, experience } = req.body;
 
   try {
-    // Find the user by dentistId
     const user = await User.findOne({ dentistId });
     if (!user || user.role !== "Dentist") {
       return res
         .status(404)
         .json({ message: "User not found or not a dentist" });
     }
-
-    // Check if a dentist profile already exists
-    // let dentistProfile = await Dentist.findOne({ dentistId: dentistId });
 
       const dentistProfile = new Dentist({
         dentistId: dentistId, // Use dentistId as dentistId
@@ -41,26 +37,30 @@ exports.createDentistProfile = async (req, res) => {
   }
 };
 
-exports.getDentistProfile = async (req,res) =>{
+exports.getDentistProfile = async (req, res) => {
   try {
-    const dentistId = req.body.dentistId
-    const dentist = await Dentist.find( {dentistId : dentistId});
+    const { dentistId } = req.query; // Retrieve dentistId from query parameters
+    const dentist = await Dentist.findOne({ dentistId });
+
     if (!dentist) {
-      return res.status(404).json({
-        message: `Dentist with ID ${dentistId} does not exist`
-    });}
+      return res.status(200).json({
+        message: "No profile found. Please create a dentist profile.",
+        dentist: null
+      });
+    }
+
     res.status(200).json({
-      message: "dentists retrieved successfully",
+      message: "Dentist profile retrieved successfully",
       dentist
     });
 
   } catch (error) {
     res.status(500).json({
-      message: "Error retrieving dentists",
+      message: "Error retrieving dentist profile",
       error: error.message
     });
   }
-}
+};
 
 exports.updateDentistProfile = async (req, res) => {
   const { dentistId } = req.body;
@@ -99,17 +99,21 @@ exports.updateDentistProfile = async (req, res) => {
 exports.getAllDentists = async (req, res) => {
   try {
     const dentists = await Dentist.find();
+    
     if (dentists.length === 0) {
-      return res.status(404).json({ message: "No dentists found" });
+      return res.status(200).json({
+        message: "No dentist profiles found. Please create dentist profiles.",
+        dentists: []
+      });
     }
 
     res.status(200).json({
-      message: "dentists retrieved successfully",
+      message: "Dentist profiles retrieved successfully",
       dentists
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error retrieving dentists",
+      message: "Error retrieving dentist profiles",
       error: error.message
     });
   }
@@ -172,8 +176,6 @@ exports.createDentistSchedule = async (req, res) => {
   try {
     const { dentistId, availableTime } = req.body;
 
-    // If you're using dentistId as a string, you don't need to check for ObjectId
-    // You can validate that the dentist exists based on the string ID
     const dentist = await Dentist.findOne({ dentistId: dentistId });
     if (!dentist) {
       return res.status(404).json({

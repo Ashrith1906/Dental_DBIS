@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import Navbar from '../Navbar'
+import ReceptionNavbar from './ReceptionNavbar'
 
 const PatientProfile = () => {
   const [formData, setFormData] = useState({
@@ -49,8 +49,7 @@ const PatientProfile = () => {
 
   return (
     <>
-    <Navbar/>
-   
+    <ReceptionNavbar/>
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center">Create Patient Profile</h2>

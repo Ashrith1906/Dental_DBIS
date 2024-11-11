@@ -3,11 +3,11 @@ const Schema = mongoose.Schema;
 
 const dentistScheduleSchema = new Schema({
   dentistId: {
-    type: String, // Store dentistId as a string, e.g., "d004"
+    type: String,
     required: true
   },
   availableTime: {
-    type: [String], // Store multiple available times as an array of strings
+    type: [String], // Array of available time slots as strings (e.g., ["10:00", "10:30", "11:00"])
     required: true
   }
 });

@@ -14,7 +14,7 @@ env.config();
 app.use(
   cors({
     origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PATCH", "DELETE"],
+    methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
   })
 );
 
@@ -27,7 +27,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/patient',patientRoutes)
-app.use('/api/appointment',appointmentRoutes)
+app.use('/api/appointments',appointmentRoutes)
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);

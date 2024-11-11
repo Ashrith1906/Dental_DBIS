@@ -1,10 +1,11 @@
 import React from 'react'
-import Navbar from '../Navbar'
+import DentistNavbar from './DentistNavbar'
+
 
 const Dentist = () => {
   return (
     <>
-    <Navbar/>
+    <DentistNavbar/>
     <div>Dentist</div>
     </>
   )

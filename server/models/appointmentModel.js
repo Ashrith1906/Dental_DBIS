@@ -8,25 +8,19 @@ async function generateNextAppointmentId() {
       .sort({ aptID: -1 }) // Sort by aptID in descending order
       .select('aptID'); // Only return aptID field
 
-    // If there are existing appointments
     if (latestAppointment && latestAppointment.aptID) {
       const latestId = latestAppointment.aptID;
 
-      // Check if the ID format is correct (should start with 'a' followed by 3 digits)
+      // Ensure ID format (should start with 'a' followed by 3 digits)
       if (/^a\d{3}$/.test(latestId)) {
         const numericPart = parseInt(latestId.slice(1), 10); // Extract numeric part from aptID
         const nextId = 'a' + String(numericPart + 1).padStart(3, '0'); // Increment and pad to 3 digits
-        console.log(`Generated next aptID: ${nextId}`);
         return nextId;
       } else {
-        // If the format is invalid, reset to starting ID 'a001'
-        console.log(`Invalid aptID format in existing data, starting from a001`);
-        return 'a001';
+        return 'a001'; // Reset if format is invalid
       }
     } else {
-      // If no appointments exist, start with a001
-      console.log('Starting aptID sequence');
-      return 'a001';
+      return 'a001'; // Start with a001 if no appointments exist
     }
   } catch (error) {
     console.error('Error generating aptID:', error.message);
@@ -41,41 +35,36 @@ const appointmentSchema = new mongoose.Schema({
   },
   dentistId: {
     type: String,
+    required: true
   },
   aptID: {
-    type: String,  // This will store appointment ID like "a001"
+    type: String,  // e.g., "a001"
   },
   apt_date: {
     type: Date,
-    // required: true
+    required: true
   },
   apt_time: {
     type: String,  // Store time in HH:MM format
-    // required: true
+    required: true
   },
   reason: {
     type: String,
-    // required: true
+    required: true
   },
   status: {
     type: String,
-    // required: true
-  }
+    enum: ["booked", "available"],
+    default: "booked",
+  },
 });
 
-// Pre-save hook to generate the next aptID based on existing data
+// Pre-save hook to generate the next aptID
 appointmentSchema.pre('save', async function(next) {
   if (this.isNew) {
-    try {
-      // Generate a sequential appointment ID (aptID) based on existing data
-      this.aptID = await generateNextAppointmentId();
-      next();
-    } catch (error) {
-      next(error);
-    }
-  } else {
-    next();
+    this.aptID = await generateNextAppointmentId();
   }
+  next();
 });
 
 const Appointment = mongoose.model('Appointment', appointmentSchema);

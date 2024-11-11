@@ -1,14 +1,14 @@
 const express = require("express");
 const router = express.Router();
 
-const {createAppointment,selectDate, selectTime,getAvailableTime,getDentistFreeSlots}=require('../controllers/appointmentController');
+const {createAppointment,createDentistSchedule, getDentistSchedule }=require('../controllers/appointmentController');
 
 router.post("/create", createAppointment);
 
-router.post("/selectDate",selectDate);
+// Route to create or update a dentist's schedule
+router.post('/schedule', createDentistSchedule);
 
-router.post("/selectTime",selectTime);
-
-router.get("/getDentistFreeSlots",getDentistFreeSlots);
+// Route to get a dentist's schedule by dentistId
+router.get('/:dentistId', getDentistSchedule);
 
 module.exports = router;
