@@ -60,7 +60,55 @@ exports.getDentistSchedule = async (req, res) => {
   }
 };
 
-// Create an appointment
+// Get dentistId from patientId (pID)
+exports.getDentistIdByPatientId = async (req, res) => {
+  const { pID } = req.params;
+  try {
+    const patient = await Patient.findOne({ pID });
+
+    if (!patient) {
+      return res.status(404).json({ message: `Patient with ID ${pID} not found` });
+    }
+
+    res.status(200).json({ dentistId: patient.dentistId });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching dentistId', error: error.message });
+  }
+};
+
+exports.getAvailableSlotsByDentistId = async (req, res) => {
+  const { dentistId, date } = req.params;
+
+  try {
+    // Retrieve the dentist's schedule to get all available slots
+    const schedule = await DentistSchedule.findOne({ dentistId });
+
+    if (!schedule) {
+      return res.status(404).json({ message: `No schedule found for Dentist with ID ${dentistId}` });
+    }
+
+    // Fetch existing appointments for the given dentist and date
+    const existingAppointments = await Appointment.find({
+      dentistId,
+      apt_date: date,
+      status: "booked" // You can also include additional status filters like "confirmed" if needed
+    });
+
+    // Extract the booked slots from the existing appointments
+    const bookedSlots = existingAppointments.map(appointment => appointment.apt_time);
+
+    // Filter available slots by excluding booked ones
+    const availableSlots = schedule.availableTime.filter(slot => !bookedSlots.includes(slot));
+
+    res.status(200).json({
+      message: "Available slots for the given date",
+      availableSlots
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching available slots', error: error.message });
+  }
+};
+
 exports.createAppointment = async (req, res) => {
   try {
     const { pID, date, slot, reason } = req.body;
@@ -84,15 +132,16 @@ exports.createAppointment = async (req, res) => {
       return res.status(400).json({ message: `Requested slot ${slot} is not available.` });
     }
 
-    // Check if the slot is already booked for the selected date and dentist
+    // Check if there is already an appointment for the same patient, dentist, date, and slot
     const existingAppointment = await Appointment.findOne({
+      pID,
       dentistId,
       apt_date: date,
       apt_time: slot
     });
 
     if (existingAppointment) {
-      return res.status(400).json({ message: `Slot ${slot} on ${date} is already booked.` });
+      return res.status(400).json({ message: `An appointment already exists for this patient at this time.` });
     }
 
     // Create and save new appointment
@@ -110,11 +159,7 @@ exports.createAppointment = async (req, res) => {
       message: "Appointment created successfully",
       appointment: newAppointment
     });
-
   } catch (error) {
-    res.status(500).json({
-      message: "Error creating appointment",
-      error: error.message
-    });
+    res.status(500).json({ message: 'Error creating appointment', error: error.message });
   }
 };

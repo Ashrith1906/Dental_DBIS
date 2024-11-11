@@ -1,11 +1,13 @@
 import React from 'react'
 import Navbar from './ReceptionNavbar'
+import Appointments from './Appointments'
 
 const Receptionist = () => {
   return (
     <>
     <Navbar/>
-    Receptionist</>
+    <Appointments/>
+    </>
   )
 }
 
