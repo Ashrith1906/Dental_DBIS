@@ -7,6 +7,8 @@ const userRoutes = require("./routes/userRoute");
 const profileRoutes = require("./routes/profileRoute"); 
 const patientRoutes = require("./routes/patientRoute");
 const appointmentRoutes = require("./routes/appointmentRoute");
+const reportRoutes = require("./routes/reportRoute");
+const invoiceRoutes = require("./routes/invoiceRoute");
 
 const app = express();
 env.config();
@@ -26,8 +28,10 @@ app.get("/", (req, res) => {
 });
 app.use("/api/users", userRoutes);
 app.use('/api/profiles', profileRoutes);
-app.use('/api/patient',patientRoutes)
-app.use('/api/appointments',appointmentRoutes)
+app.use('/api/patient',patientRoutes);
+app.use('/api/appointments',appointmentRoutes);
+app.use('/api/report',reportRoutes);
+app.use('/api/invoice',invoiceRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
