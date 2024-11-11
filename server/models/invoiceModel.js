@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const invoiceSchema = new mongoose.Schema({
-  invoiceID: {
-    type: Number,
+  aptID: {
+    type: String,
     required: true,
     unique: true
   },
