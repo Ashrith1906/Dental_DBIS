@@ -1,5 +1,6 @@
 const Patient = require("../models/patientModel");
 const Dentist = require("../models/dentistModel");
+const Appointment = require("../models/appointmentModel");
 
 // Create a new patient
 exports.createPatient = async (req, res) => {
@@ -74,7 +75,7 @@ exports.getAllPatients = async (req, res) => {
 // Get a single patient by pID
 exports.getPatientById = async (req, res) => {
   try {
-    const { pID } = req.params;
+    const { pID } = req.query;
 
     const patient = await Patient.findOne({ pID });
     if (!patient) {
@@ -96,7 +97,7 @@ exports.getPatientById = async (req, res) => {
 // Update a patient's details by pID
 exports.updatePatient = async (req, res) => {
   try {
-    const { pID } = req.params;
+    const { pID } = req.query;
     const { name, dob, age, gender, phone_no, past_history, current_status, address } = req.body;
 
     // Validate required fields
@@ -145,24 +146,27 @@ exports.updatePatient = async (req, res) => {
   }
 };
 
-// Delete a patient by pID
-exports.deletePatient = async (req, res) => {
+exports.deletePatientById = async (req, res) => {
   try {
-    const { pID } = req.params;
+    const { pID } = req.query;
 
-    const patient = await Patient.findOneAndDelete({ pID });
+    // Find and delete the patient
+    const patient = await Patient.findOneAndDelete({ pID:pID });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
 
+    // Delete all appointments associated with the patient
+    await Appointment.deleteMany({ pID:pID });
+
     res.status(200).json({
-      message: "Patient deleted successfully",
-      patient
+      message: "Patient and associated appointments deleted successfully",
+      patient,
     });
   } catch (error) {
     res.status(500).json({
       message: "Error deleting patient",
-      error: error.message
+      error: error.message,
     });
   }
 };
