@@ -8,6 +8,9 @@ const reportSchema = new mongoose.Schema({
     apt_date: {
       type: Date,
     },
+    consultedDentist:{
+        type: String,
+    },
     reason: {
         type: String,
     },
@@ -15,7 +18,7 @@ const reportSchema = new mongoose.Schema({
         type: String,
         required:true
     },
-    priscription:{
+    prescription:{
         type: String,
         required:true
     },

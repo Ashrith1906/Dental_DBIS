@@ -1,19 +1,22 @@
 const Report = require('../models/reportModel')
 const Appointment = require('../models/appointmentModel')
+const Dentist = require('../models/dentistModel')
 
 exports.createReport = async(req,res) =>{
     try {
-        const  { aptID,primaryDiagnosis,priscription,procedures} = req.body
-        const appointment = await Appointment.find({ aptID : aptID })
+        const  { aptID,primaryDiagnosis,prescription,procedures} = req.body
+        const appointment = await Appointment.findOne({ aptID : aptID })
         if(!appointment){
                 return res
                   .status(404)
                   .json({ message: "Appointment does not exist" });
         }
+        const dentist = await Dentist.findOne({dentistId:appointment.dentistId})
         const newreport = new Report({
             aptID,
+            consultedDentist:dentist.name,
             primaryDiagnosis,
-            priscription,
+            prescription,
             procedures,
             apt_date : appointment.apt_date,
             reason: appointment.reason,
@@ -68,7 +71,7 @@ exports.updateReport = async (req, res) => {
       }
   
       // Update only the fields provided in the request body
-      const fieldsToUpdate = ['primaryDiagnosis', 'priscription', 'procedures'];
+      const fieldsToUpdate = ['primaryDiagnosis', 'prescription', 'procedures'];
       fieldsToUpdate.forEach(field => {
         if (req.body[field] !== undefined) {
             report[field] = req.body[field];
