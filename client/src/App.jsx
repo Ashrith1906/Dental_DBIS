@@ -9,6 +9,7 @@ import Dentist from './components/Dentists/Dentist';
 import Receptionist from './components/Reception/Receptionist';
 import PatientProfile from './components/Reception/PatientProfile';
 import DentistProfile from './components/Dentists/DentistProfile';
+import PatientRecords from './components/Reception/PatientRecords';
 
 const App = () => {
   return (
@@ -35,6 +36,10 @@ const App = () => {
           <Route
             path="/patient-profile"
             element={<PrivateRoute role="Receptionist" Component={PatientProfile} />}
+          />
+          <Route
+            path="/patientrecords"
+            element={<PrivateRoute role="Receptionist" Component={PatientRecords} />}
           />
         </Routes>
         <ToastContainer position="top-right" autoClose={3000} />

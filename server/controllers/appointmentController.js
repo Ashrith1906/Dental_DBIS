@@ -1,6 +1,7 @@
 const Appointment = require("../models/appointmentModel")
 const Patient = require("../models/patientModel");
 const DentistSchedule = require('../models/dentistScheduleModel');
+const Dentist = require('../models/dentistModel');
 
 // Create or update dentist's schedule
 exports.createDentistSchedule = async (req, res) => {
@@ -161,5 +162,123 @@ exports.createAppointment = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Error creating appointment', error: error.message });
+  }
+};
+
+exports.getAllAppointmentsByPID = async (req,res) => {
+  try {
+    const pID = req.query.pID;
+    const appointment = await Appointment.find({pID:pID});
+    if (appointment.length === 0) {
+      return res.status(404).json({ message: "No appointments found" });
+    }
+
+    res.status(200).json({
+      message: "appointments retrieved successfully",
+      appointment
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error retrieving appointments",
+      error: error.message
+    });
+  }
+}
+
+exports.getAllAppointmentsByDentistId = async (req,res) => {
+  try {
+    const dentistId = req.query.dentistId;
+    const appointment = await Appointment.find({dentistId:dentistId});
+    if (appointment.length === 0) {
+      return res.status(404).json({ message: "No appointments found" });
+    }
+
+    res.status(200).json({
+      message: "appointments retrieved successfully",
+      appointment
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error retrieving appointments",
+      error: error.message
+    });
+  }
+}
+
+exports.getAllAppointments = async (req,res)=>{
+  try {
+    const appointment = await Appointment.find();
+    if (appointment.length === 0) {
+      return res.status(404).json({ message: "No appointments found" });
+    }
+
+    res.status(200).json({
+      message: "appointments retrieved successfully",
+      appointment
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error retrieving appointments",
+      error: error.message
+    });
+  }
+}
+
+// Get appointment details by aptID
+exports.getAppointmentDetailsByAptID = async (req, res) => {
+  const { aptID } = req.params;
+
+  try {
+    // Find the appointment by aptID
+    const appointment = await Appointment.findOne({ aptID });
+
+    if (!appointment) {
+      return res.status(404).json({ message: `No appointment found with ID ${aptID}` });
+    }
+
+    // Fetch patient details
+    const patient = await Patient.findOne({ pID: appointment.pID });
+    if (!patient) {
+      return res.status(404).json({ message: `No patient found with ID ${appointment.pID}` });
+    }
+
+    // Fetch dentist details
+    const dentist = await Dentist.findOne({ dentistId: appointment.dentistId });
+    if (!dentist) {
+      return res.status(404).json({ message: `No dentist found with ID ${appointment.dentistId}` });
+    }
+
+    // Combine all details into a single response
+    const appointmentDetails = {
+      appointment: {
+        aptID: appointment.aptID,
+        date: appointment.apt_date,
+        time: appointment.apt_time,
+        reason: appointment.reason,
+        status: appointment.status,
+      },
+      patient: {
+        name: patient.name,
+        age: patient.age,
+        gender: patient.gender,
+        phone: patient.phone_no,
+        address: patient.address,
+        history: patient.past_history,
+      },
+      dentist: {
+        name: dentist.name,
+        specialization: dentist.specialization,
+        experience: dentist.experience,
+        phone: dentist.phone_no,
+        email: dentist.email,
+      },
+    };
+
+    res.status(200).json({
+      message: 'Appointment details retrieved successfully',
+      details: appointmentDetails,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error retrieving appointment details', error: error.message });
   }
 };
