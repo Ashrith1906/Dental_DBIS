@@ -4,7 +4,7 @@ const Appointment = require('../models/appointmentModel'); // Import the Appoint
 // Create a new invoice if the appointment exists
 exports.createInvoice = async (req, res) => {
   try {
-    const { aptID, invoice_date, total_amt, payment_status } = req.body;
+    const { aptID, invoice_date, payment_status, items } = req.body;
 
     // Check if the appointment exists
     const appointment = await Appointment.findOne({ aptID });
@@ -12,8 +12,8 @@ exports.createInvoice = async (req, res) => {
       return res.status(404).json({ message: 'Appointment not found' });
     }
 
-    // Create the invoice if the appointment exists
-    const newInvoice = new Invoice({ aptID, invoice_date, total_amt, payment_status });
+    // Create the invoice with the items
+    const newInvoice = new Invoice({ aptID, invoice_date, payment_status, items });
     const savedInvoice = await newInvoice.save();
     res.status(201).json(savedInvoice);
   } catch (err) {
@@ -21,13 +21,13 @@ exports.createInvoice = async (req, res) => {
   }
 };
 
-// Get an invoice by ID
+// Get an invoice by aptID
 exports.getInvoiceById = async (req, res) => {
   try {
     const { aptID } = req.query;
 
-    // Find the invoice by ID
-    const invoice = await Invoice.find({aptID:aptID});
+    // Find the invoice by aptID
+    const invoice = await Invoice.findOne({ aptID });
     if (!invoice) {
       return res.status(404).json({ message: 'Invoice not found' });
     }
@@ -38,16 +38,15 @@ exports.getInvoiceById = async (req, res) => {
   }
 };
 
-// Update an invoice by ID
+// Update an invoice by aptID
 exports.updateInvoice = async (req, res) => {
   try {
+    const { aptID, invoice_date, payment_status, items } = req.body;
 
-    const {aptID, invoice_date, total_amt, payment_status } = req.body;
-
-    // Find and update the invoice by ID
-    const updatedInvoice = await Invoice.findByIdAndUpdate(
-      id,
-      { invoice_date, total_amt, payment_status },
+    // Find and update the invoice by aptID
+    const updatedInvoice = await Invoice.findOneAndUpdate(
+      { aptID },
+      { invoice_date, payment_status, items },
       { new: true, runValidators: true } // Return the updated document
     );
 
