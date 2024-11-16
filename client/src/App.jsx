@@ -12,6 +12,7 @@ import DentistProfile from './components/Dentists/DentistProfile';
 import PatientRecords from './components/Reception/PatientRecords';
 import Invoice from './components/Reception/Invoice';
 import Report from './components/Reception/Report';
+import DentistSchedule from './components/Dentists/DentistSchedule';
 
 const App = () => {
   return (
@@ -29,6 +30,10 @@ const App = () => {
           <Route
             path="/dentist-profile"
             element={<PrivateRoute role="Dentist" Component={DentistProfile} />}
+          />
+          <Route
+            path="/dentistschedule"
+            element={<PrivateRoute role="Dentist" Component={DentistSchedule} />}
           />
 
           <Route
