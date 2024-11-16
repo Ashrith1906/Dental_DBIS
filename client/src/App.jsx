@@ -10,6 +10,8 @@ import Receptionist from './components/Reception/Receptionist';
 import PatientProfile from './components/Reception/PatientProfile';
 import DentistProfile from './components/Dentists/DentistProfile';
 import PatientRecords from './components/Reception/PatientRecords';
+import Invoice from './components/Reception/Invoice';
+import Report from './components/Reception/Report';
 
 const App = () => {
   return (
@@ -40,6 +42,14 @@ const App = () => {
           <Route
             path="/patientrecords"
             element={<PrivateRoute role="Receptionist" Component={PatientRecords} />}
+          />
+          <Route
+            path="/invoice"
+            element={<PrivateRoute role="Receptionist" Component={Invoice} />}
+          />
+          <Route
+            path="/reports"
+            element={<PrivateRoute role="Receptionist" Component={Report} />}
           />
         </Routes>
         <ToastContainer position="top-right" autoClose={3000} />
