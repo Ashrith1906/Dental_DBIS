@@ -3,136 +3,180 @@ import axios from "axios";
 import ReceptionNavbar from "./ReceptionNavbar";
 
 const Report = () => {
-  const [aptID, setAptID] = useState(""); // Store appointment ID
-  const [patientDetails, setPatientDetails] = useState({
-    name: "Loading...",
-    age: "Loading...",
-    gender: "Loading...",
-    phone_no: "Loading...",
-  }); // Store patient details
-  const [dentistDetails, setDentistDetails] = useState({
-    name: "Loading...",
-    specialization: "Loading...",
-  }); // Store dentist details
-  const [appointmentDetails, setAppointmentDetails] = useState({
-    date: "Loading...",
-    time: "Loading...",
-    reason: "Loading...",
-  }); // Store appointment details
+  const [aptID, setAptID] = useState("");
+  const [searchAptID, setSearchAptID] = useState("");
+  const [appointments, setAppointments] = useState([]); // Store fetched appointment data
+  const [appointmentDetails, setAppointmentDetails] = useState(null);
   const [reportDetails, setReportDetails] = useState({
-    primary_diagnosis: "",
+    primaryDiagnosis: "",
     prescription: "",
     procedures: "",
-  }); // Store report details
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState("");
 
-  const [isEditing, setIsEditing] = useState(false); // Toggle for editing the report
 
-  // Fetch appointment and related details by aptID
+    // Fetch all appointments on component mount
+    useEffect(() => {
+      const fetchAppointments = async () => {
+        try {
+          const response = await axios.get("http://localhost:3000/api/appointments/getAllAppointments");
+          setAppointments(response.data.appointment || []); // Store appointments in state
+        } catch (error) {
+          console.error("Failed to fetch appointments:", error);
+          alert("Unable to fetch appointments. Please try again.");
+        }
+      };
+  
+      fetchAppointments();
+    }, []);
+
+  // Fetch appointment details
   useEffect(() => {
-    const fetchDetails = async () => {
-      if (!aptID) return; // Prevent unnecessary calls
+    const fetchAppointmentDetails = async () => {
+      if (!searchAptID) return;
 
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/appointments/details/${aptID}`
+          `http://localhost:3000/api/appointments/details/${searchAptID}`
         );
-        const { details } = response.data;
-
-        setPatientDetails(details.patient || {
-          name: "Not Available",
-          age: "Not Available",
-          gender: "Not Available",
-          phone_no: "Not Available",
-        });
-        setDentistDetails(details.dentist || {
-          name: "Not Available",
-          specialization: "Not Available",
-        });
-        setAppointmentDetails(details.appointment || {
-          date: "Not Available",
-          time: "Not Available",
-          reason: "Not Available",
-        });
+        setAppointmentDetails(response.data.details);
       } catch (error) {
         console.error("Failed to fetch appointment details:", error);
         alert("Unable to fetch appointment details. Please try again.");
       }
     };
 
-    fetchDetails();
-  }, [aptID]);
+    fetchAppointmentDetails();
+  }, [searchAptID]);
 
-  // Handle input change for report fields
-  const handleReportChange = (e) => {
-    setReportDetails({ ...reportDetails, [e.target.name]: e.target.value });
+  // Fetch report details
+  const fetchReport = async () => {
+    if (!searchAptID) return;
+
+    try {
+      const response = await axios.get(`http://localhost:3000/api/report/get`, {
+        params: { aptID: searchAptID },
+      });
+      const { report, message } = response.data;
+
+      if (report) {
+        setReportDetails(report);
+        setIsEditing(true); // If report exists, set editing to true
+      } else {
+        alert(message || "No report found. Please create one.");
+        setReportDetails({
+          primaryDiagnosis: "",
+          prescription: "",
+          procedures: "",
+        });
+        setIsEditing(false); // If no report exists, it's create mode
+      }
+    } catch (error) {
+      console.error("Failed to fetch report:", error);
+      alert("Unable to fetch report. Please try again.");
+    }
   };
 
-  // Toggle between editing and viewing modes
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-  };
+  useEffect(() => {
+    fetchReport(); // Call fetchReport when searchAptID changes
+  }, [searchAptID]);
 
-  // Submit the report data to the backend
   const handleReportSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate that all fields are filled
+    if (!reportDetails.primaryDiagnosis || !reportDetails.prescription || !reportDetails.procedures) {
+      setError("All fields are required.");
+      return;
+    }
+
     try {
-      const response = await axios.post("http://localhost:3000/api/report/create", {
-        aptID,
-        primaryDiagnosis: reportDetails.primary_diagnosis,
+      const endpoint = isEditing
+        ? "http://localhost:3000/api/report/update"
+        : "http://localhost:3000/api/report/create"; // Set the correct endpoint for creating or updating
+      const method = isEditing ? "put" : "post"; // Use PUT if updating, POST if creating
+      const response = await axios[method](endpoint, {
+        aptID: searchAptID,
+        primaryDiagnosis: reportDetails.primaryDiagnosis,
         prescription: reportDetails.prescription,
         procedures: reportDetails.procedures,
       });
-      if (response.data.message === "Report created successfully") {
-        alert("Report saved successfully!");
-        setIsEditing(false); // Disable editing after submission
-      }
+
+      alert(response.data.message || "Report saved successfully!");
+      
+      // After successful creation or update, fetch the latest report to display
+      fetchReport();  // This will reload the report details from the server
+
+      setIsEditing(true); // Set editing mode after creation
+      setError(""); // Clear any errors
     } catch (error) {
       console.error("Failed to save report:", error);
       alert("Failed to save report. Please try again.");
     }
   };
 
-  // Print function that opens a new tab with the report content
   const handlePrint = () => {
+    if (!reportDetails || !appointmentDetails) {
+      alert("No complete details available to print.");
+      return;
+    }
+
+    const { appointment, patient, dentist } = appointmentDetails;
     const printWindow = window.open("", "_blank");
     printWindow.document.write(`
       <html>
         <head>
-          <title>Report - Appointment ID: ${aptID}</title>
-          <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f1f5f9; color: #333; }
-            h1 { color: #005eb8; }
-            .section { margin-bottom: 20px; }
-            .section strong { color: #333; }
-            .section p { margin: 4px 0; }
-          </style>
+          <title>Report - Appointment ID: ${searchAptID}</title>
+          <script src="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"></script>
         </head>
-        <body>
-          <h1>Patient Report</h1>
-          <div class="section">
-            <h2>Appointment Details</h2>
-            <p><strong>Appointment ID:</strong> ${aptID}</p>
-            <p><strong>Date:</strong> ${appointmentDetails.date}</p>
-            <p><strong>Time:</strong> ${appointmentDetails.time}</p>
-            <p><strong>Reason for Appointment:</strong> ${appointmentDetails.reason}</p>
-          </div>
-          <div class="section">
-            <h2>Patient Details</h2>
-            <p><strong>Name:</strong> ${patientDetails.name}</p>
-            <p><strong>Age:</strong> ${patientDetails.age}</p>
-            <p><strong>Gender:</strong> ${patientDetails.gender}</p>
-            <p><strong>Phone:</strong> ${patientDetails.phone_no}</p>
-          </div>
-          <div class="section">
-            <h2>Dentist Details</h2>
-            <p><strong>Dentist Name:</strong> ${dentistDetails.name}</p>
-            <p><strong>Specialization:</strong> ${dentistDetails.specialization}</p>
-          </div>
-          <div class="section">
-            <h2>Report Details</h2>
-            <p><strong>Primary Diagnosis:</strong> ${reportDetails.primary_diagnosis}</p>
-            <p><strong>Prescription:</strong> ${reportDetails.prescription}</p>
-            <p><strong>Procedures:</strong> ${reportDetails.procedures}</p>
+        <body class="bg-gray-50 font-sans text-gray-900 p-8">
+          <div class="max-w-4xl mx-auto bg-white p-8 shadow-lg rounded-lg border border-gray-200">
+            <h1 class="text-4xl font-extrabold text-teal-700 text-center mb-10">Patient Report</h1>
+            
+            <!-- Appointment Details Section -->
+            <div class="section mb-10">
+              <h2 class="text-2xl font-semibold text-teal-600 mb-4 border-b-2 border-teal-600 pb-2">Appointment Details</h2>
+              <ul class="space-y-3 text-lg">
+                <li><span class="font-medium text-teal-500">Appointment ID:</span> ${appointment.aptID}</li>
+                <li><span class="font-medium text-teal-500">Date:</span> ${new Date(appointment.date).toLocaleDateString()}</li>
+                <li><span class="font-medium text-teal-500">Time:</span> ${appointment.time}</li>
+              </ul>
+            </div>
+    
+            <!-- Patient Details Section -->
+            <div class="section mb-10">
+              <h2 class="text-2xl font-semibold text-teal-600 mb-4 border-b-2 border-teal-600 pb-2">Patient Details</h2>
+              <ul class="space-y-3 text-lg">
+                <li><span class="font-medium text-teal-500">Name:</span> ${patient.name}</li>
+                <li><span class="font-medium text-teal-500">Age:</span> ${patient.age}</li>
+                <li><span class="font-medium text-teal-500">Gender:</span> ${patient.gender}</li>
+              </ul>
+            </div>
+    
+            <!-- Dentist Details Section -->
+            <div class="section mb-10">
+              <h2 class="text-2xl font-semibold text-teal-600 mb-4 border-b-2 border-teal-600 pb-2">Dentist Details</h2>
+              <ul class="space-y-3 text-lg">
+                <li><span class="font-medium text-teal-500">Name:</span> ${dentist.name}</li>
+                <li><span class="font-medium text-teal-500">Specialization:</span> ${dentist.specialization}</li>
+              </ul>
+            </div>
+    
+            <!-- Report Details Section -->
+            <div class="section mb-10">
+              <h2 class="text-2xl font-semibold text-teal-600 mb-4 border-b-2 border-teal-600 pb-2">Report Details</h2>
+              <div class="space-y-4 text-lg">
+                <p><span class="font-medium text-teal-500">Primary Diagnosis:</span> ${reportDetails.primaryDiagnosis}</p>
+                <p><span class="font-medium text-teal-500">Prescription:</span> ${reportDetails.prescription}</p>
+                <p><span class="font-medium text-teal-500">Procedures:</span> ${reportDetails.procedures}</p>
+              </div>
+            </div>
+    
+            <!-- Footer -->
+            <div class="text-center mt-12 border-t-2 border-gray-200 pt-4">
+              <p class="text-lg text-gray-600">Generated on: ${new Date().toLocaleString()}</p>
+            </div>
           </div>
         </body>
       </html>
@@ -141,141 +185,143 @@ const Report = () => {
     printWindow.print();
   };
 
+  const validateForm = () => {
+    return (
+      reportDetails.primaryDiagnosis &&
+      reportDetails.prescription &&
+      reportDetails.procedures
+    );
+  };
+
   return (
     <div>
       <ReceptionNavbar />
-
-      <div className="bg-gray-50 min-h-screen flex flex-col items-center py-8">
+      <div className="min-h-screen flex flex-col items-center py-8 bg-gray-50">
         <div className="bg-white p-8 shadow-lg rounded-lg w-full max-w-3xl">
           <h1 className="text-3xl font-semibold text-teal-700 mb-6">Patient Report</h1>
 
-          {/* Appointment ID and Details */}
-          <div className="mb-6 bg-teal-50 p-4 rounded-lg shadow-sm">
-            <div className="flex items-center space-x-4">
-              <label htmlFor="aptID" className="font-medium text-teal-700 text-lg">
-                Appointment ID:
-              </label>
-              <input
-                type="text"
-                id="aptID"
-                value={aptID}
-                onChange={(e) => setAptID(e.target.value)}
-                className="p-2 border border-teal-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="Enter Appointment ID"
-              />
-            </div>
-
-            {aptID && (
-              <div className="mt-4 space-y-2">
-                <p>
-                  <strong>Date:</strong> {appointmentDetails.date}
-                </p>
-                <p>
-                  <strong>Time:</strong> {appointmentDetails.time}
-                </p>
-                <p>
-                  <strong>Reason for Appointment:</strong>{" "}
-                  {appointmentDetails.reason}
-                </p>
-              </div>
-            )}
+          <div className="mb-6">
+              <label htmlFor="appointment" className="block text-teal-700 text-lg">Appointment ID</label>
+            <select
+              id="appointment"
+              className="w-full mt-2 p-2 border border-gray-300 rounded-lg"
+              value={aptID}
+              onChange={(e) => {
+                setAptID(e.target.value);
+                setSearchAptID(e.target.value); // Set the searchAptID when an aptID is selected
+              }}
+            >
+              <option value="">Select Appointment ID</option>
+              {appointments.map((apt) => (
+                <option key={apt.aptID} value={apt.aptID}>{apt.aptID}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Patient Details */}
-          {aptID && (
-            <div className="mb-6 bg-teal-50 p-4 rounded-lg shadow-sm">
-              <div className="space-y-2">
-                <p>
-                  <strong>Name:</strong> {patientDetails.name}
-                </p>
-                <p>
-                  <strong>Age:</strong> {patientDetails.age}
-                </p>
-                <p>
-                  <strong>Gender:</strong> {patientDetails.gender}
-                </p>
-                <p>
-                  <strong>Phone:</strong> {patientDetails.phone_no}
-                </p>
+          {appointmentDetails && (
+  <div className="mb-6">
+    <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
+      <div className="p-6">
+        <h2 className="text-3xl font-semibold text-teal-700 mb-4">Appointment Details</h2>
+        <ul className="space-y-4 text-lg text-gray-700">
+          <li className="flex justify-between">
+            <span className="font-medium text-teal-500">Patient Name:</span>
+            <span>{appointmentDetails.patient.name}</span>
+          </li>
+          <li className="flex justify-between">
+            <span className="font-medium text-teal-500">Age:</span>
+            <span>{appointmentDetails.patient.age}</span>
+          </li>
+          <li className="flex justify-between">
+            <span className="font-medium text-teal-500">Gender:</span>
+            <span>{appointmentDetails.patient.gender}</span>
+          </li>
+          <li className="flex justify-between">
+            <span className="font-medium text-teal-500">Consulted Dentist:</span>
+            <span>{appointmentDetails.dentist.name}</span>
+          </li>
+          <li className="flex justify-between">
+            <span className="font-medium text-teal-500">Date:</span>
+            <span>{new Date(appointmentDetails.appointment.date).toLocaleDateString()}</span>
+          </li>
+          <li className="flex justify-between">
+            <span className="font-medium text-teal-500">Time:</span>
+            <span>{appointmentDetails.appointment.time}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+)}
+
+          {reportDetails ? (
+            <form onSubmit={handleReportSubmit} className="space-y-6">
+              <div>
+                <label className="block text-teal-700 text-lg">Primary Diagnosis</label>
+                <textarea
+                  name="primaryDiagnosis"
+                  value={reportDetails.primaryDiagnosis}
+                  onChange={(e) =>
+                    setReportDetails({
+                      ...reportDetails,
+                      primaryDiagnosis: e.target.value,
+                    })
+                  }
+                  className="w-full p-3 border rounded-lg"
+                  required
+                />
               </div>
-            </div>
-          )}
-
-          {/* Dentist Details */}
-          {aptID && (
-            <div className="mb-6 bg-teal-50 p-4 rounded-lg shadow-sm">
-              <div className="space-y-2">
-                <p>
-                  <strong>Dentist Name:</strong> {dentistDetails.name}
-                </p>
-                <p>
-                  <strong>Specialization:</strong> {dentistDetails.specialization}
-                </p>
+              <div>
+                <label className="block text-teal-700 text-lg">Prescription</label>
+                <textarea
+                  name="prescription"
+                  value={reportDetails.prescription}
+                  onChange={(e) =>
+                    setReportDetails({
+                      ...reportDetails,
+                      prescription: e.target.value,
+                    })
+                  }
+                  className="w-full p-3 border rounded-lg"
+                  required
+                />
               </div>
-            </div>
+              <div>
+                <label className="block text-teal-700 text-lg">Procedures</label>
+                <textarea
+                  name="procedures"
+                  value={reportDetails.procedures}
+                  onChange={(e) =>
+                    setReportDetails({
+                      ...reportDetails,
+                      procedures: e.target.value,
+                    })
+                  }
+                  className="w-full p-3 border rounded-lg"
+                  required
+                />
+              </div>
+              {error && <p className="text-red-600">{error}</p>}
+              <div className="flex justify-between mt-6">
+                <button
+                  type="submit"
+                  disabled={!validateForm()}
+                  className="bg-teal-600 text-white py-2 px-6 rounded-lg disabled:opacity-50"
+                >
+                  {isEditing ? "Update Report" : "Create Report"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="bg-teal-600 text-white py-2 px-6 rounded-lg"
+                >
+                 Print Report
+                </button>
+              </div>
+            </form>
+          ) : (
+            <p className="text-teal-700">No report available.</p>
           )}
-
-          {/* Report Details */}
-          <form onSubmit={handleReportSubmit} className="space-y-6">
-            <div>
-              <label className="block text-teal-700 text-lg">Primary Diagnosis</label>
-              <textarea
-                name="primary_diagnosis"
-                value={reportDetails.primary_diagnosis}
-                onChange={handleReportChange}
-                className="w-full p-3 border border-teal-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                disabled={!isEditing}
-              ></textarea>
-            </div>
-
-            <div>
-              <label className="block text-teal-700 text-lg">Prescription</label>
-              <textarea
-                name="prescription"
-                value={reportDetails.prescription}
-                onChange={handleReportChange}
-                className="w-full p-3 border border-teal-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                disabled={!isEditing}
-              ></textarea>
-            </div>
-
-            <div>
-              <label className="block text-teal-700 text-lg">Procedures</label>
-              <textarea
-                name="procedures"
-                value={reportDetails.procedures}
-                onChange={handleReportChange}
-                className="w-full p-3 border border-teal-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                disabled={!isEditing}
-              ></textarea>
-            </div>
-
-
-            <div className="flex items-center space-x-4">
-             <button
-                type="button"
-                onClick={handleEditToggle}
-                className="bg-teal-600 text-white p-3 rounded-md hover:bg-teal-700"
-              >
-                {isEditing ? "Cancel Editing" : "Edit Report"}
-              </button>
-              {isEditing && (
-              <button
-              type="submit"
-              className="bg-teal-600 text-white p-3 rounded-md hover:bg-teal-700"
-            >
-              Save Report
-            </button>
-              )}
-              <button
-                type="button"
-                onClick={handlePrint}
-                className="bg-teal-600 text-white p-3 rounded-md hover:bg-teal-700"
-              >
-                Print Report
-              </button>
-            </div>
-          </form>
         </div>
       </div>
     </div>

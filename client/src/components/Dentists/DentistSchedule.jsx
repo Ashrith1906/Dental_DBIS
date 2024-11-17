@@ -2,19 +2,36 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext"; // Access dentistId from context
 import { toast } from "react-toastify";
+import DentistNavbar from "./DentistNavbar";
+
+// Helper function to generate 20-minute time slots
+const generateSlots = (startTime, endTime) => {
+  const slots = [];
+  let start = new Date(`1970-01-01T${startTime}:00`);
+  const end = new Date(`1970-01-01T${endTime}:00`);
+
+  while (start < end) {
+    const nextSlot = new Date(start.getTime() + 20 * 60 * 1000);
+    slots.push(start.toTimeString().substring(0, 5)); // Add HH:mm format
+    start = nextSlot;
+  }
+
+  return slots;
+};
 
 const DentistSchedule = () => {
   const { dentistId } = useAuth(); // Get dentistId from the context
-  const [availableTime, setAvailableTime] = useState(""); // Store available time
+  const [timeRanges, setTimeRanges] = useState([{ startTime: "", endTime: "" }]); // For handling multiple time ranges
   const [loading, setLoading] = useState(false); // For loading state
   const [error, setError] = useState(""); // For error state
+  const [availableTime, setAvailableTime] = useState([]); // Store generated time slots
 
   // Fetch existing schedule when the component mounts
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/schedule?dentistId=${dentistId}`
+          `http://localhost:3000/api/appointments/schedule?dentistId=${dentistId}`
         );
         if (response.data.schedule) {
           setAvailableTime(response.data.schedule.availableTime); // Set existing available time
@@ -35,15 +52,21 @@ const DentistSchedule = () => {
     setLoading(true);
     setError(""); // Reset error state
 
+    // Generate slots for all time ranges
+    const generatedSlots = timeRanges.flatMap(range =>
+      generateSlots(range.startTime, range.endTime)
+    );
+
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/schedule",
+        "http://localhost:3000/api/appointments/schedule",
         {
           dentistId,
-          availableTime,
+          timeRanges: timeRanges, // Send time ranges to the backend
         }
       );
       toast.success(response.data.message); // Show success message
+      setAvailableTime(generatedSlots); // Update the UI with generated slots
       setLoading(false);
     } catch (err) {
       setLoading(false);
@@ -52,43 +75,102 @@ const DentistSchedule = () => {
     }
   };
 
+  // Handle adding/removing time ranges
+  const handleTimeRangeChange = (index, field, value) => {
+    const newRanges = [...timeRanges];
+    newRanges[index][field] = value;
+    setTimeRanges(newRanges);
+  };
+
+  const handleAddTimeRange = () => {
+    setTimeRanges([...timeRanges, { startTime: "", endTime: "" }]);
+  };
+
+  const handleRemoveTimeRange = (index) => {
+    const newRanges = [...timeRanges];
+    newRanges.splice(index, 1);
+    setTimeRanges(newRanges);
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
-        Dentist Schedule
+    <>
+    <DentistNavbar/>
+    <div className="container mx-auto px-4 py-8 bg-gray-50 min-h-screen">
+      <h1 className="text-4xl font-extrabold text-gray-800 text-center mb-6">
+        Manage Dentist Schedule
       </h1>
 
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">Manage Schedule</h2>
+      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-8">
+        <h2 className="text-3xl font-semibold text-gray-700 mb-6">Schedule Management</h2>
 
         {error && (
-          <p className="text-red-500 mb-4">{error}</p> // Show error message if any
+          <div className="mb-4 p-4 text-red-700 bg-red-100 border border-red-300 rounded-md">
+            {error}
+          </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              htmlFor="availableTime"
-              className="block text-gray-700 font-semibold mb-2"
+          {timeRanges.map((range, index) => (
+            <div key={index} className="mb-6 flex flex-wrap space-x-6">
+              <div className="flex-1">
+                <label
+                  htmlFor={`startTime-${index}`}
+                  className="block text-gray-700 font-medium mb-2"
+                >
+                  Start Time
+                </label>
+                <input
+                  type="time"
+                  id={`startTime-${index}`}
+                  className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={range.startTime}
+                  onChange={(e) => handleTimeRangeChange(index, "startTime", e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex-1">
+                <label
+                  htmlFor={`endTime-${index}`}
+                  className="block text-gray-700 font-medium mb-2"
+                >
+                  End Time
+                </label>
+                <input
+                  type="time"
+                  id={`endTime-${index}`}
+                  className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={range.endTime}
+                  onChange={(e) => handleTimeRangeChange(index, "endTime", e.target.value)}
+                  required
+                />
+              </div>
+              {timeRanges.length > 1 && (
+                <button
+                  type="button"
+                  className="text-red-500 mt-8"
+                  onClick={() => handleRemoveTimeRange(index)}
+                >
+                  <i className="fas fa-trash-alt"></i> Remove
+                </button>
+              )}
+            </div>
+          ))}
+
+          <div className="mb-6">
+            <button
+              type="button"
+              className="text-blue-600 font-medium hover:underline"
+              onClick={handleAddTimeRange}
             >
-              Available Time Slots
-            </label>
-            <input
-              type="text"
-              id="availableTime"
-              className="w-full p-3 border border-gray-300 rounded-md"
-              placeholder="Enter available time slots (e.g., 9:00 AM - 5:00 PM)"
-              value={availableTime}
-              onChange={(e) => setAvailableTime(e.target.value)}
-              required
-            />
+              + Add Another Time Range
+            </button>
           </div>
 
           <div className="mb-6">
             <button
               type="submit"
-              className={`w-full py-3 text-white font-semibold rounded-md ${
-                loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+              className={`w-full py-3 text-white font-semibold rounded-lg ${
+                loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
               }`}
               disabled={loading}
             >
@@ -97,14 +179,19 @@ const DentistSchedule = () => {
           </div>
         </form>
 
-        {availableTime && !loading && (
-          <div className="mt-6 text-gray-600">
-            <h3 className="font-semibold">Current Schedule:</h3>
-            <p>{availableTime}</p>
+        {availableTime.length > 0 && !loading && (
+          <div className="mt-8 text-gray-800">
+            <h3 className="text-2xl font-semibold mb-4">Current Schedule:</h3>
+            <ul className="space-y-2">
+              {availableTime.map((slot, index) => (
+                <li key={index} className="text-lg">{slot}</li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
     </div>
+    </>
   );
 };
 

@@ -11,6 +11,6 @@ router.post("/create", createInvoice);
 
 router.get('/get', getInvoiceById);
 
-router.put('/put', updateInvoice)
+router.put('/update', updateInvoice)
 
 module.exports = router;
