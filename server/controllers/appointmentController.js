@@ -19,11 +19,11 @@ const generateSlots = (startTime, endTime) => {
 
 // Create or update dentist's schedule
 exports.createDentistSchedule = async (req, res) => {
-  const { dentistId, timeRanges } = req.body;
+  const { dentistId, date, timeRanges } = req.body;
 
-  if (!dentistId || !timeRanges || !Array.isArray(timeRanges)) {
+  if (!dentistId || !date || !timeRanges || !Array.isArray(timeRanges)) {
     return res.status(400).json({
-      message: "Invalid input. Ensure dentistId and timeRanges are provided and correctly formatted.",
+      message: "Invalid input. Ensure dentistId, date, and timeRanges are provided and correctly formatted.",
     });
   }
 
@@ -35,11 +35,11 @@ exports.createDentistSchedule = async (req, res) => {
       availableTime = [...availableTime, ...slots];
     });
 
-    // Find existing schedule for the dentist
-    let schedule = await DentistSchedule.findOne({ dentistId });
+    // Find existing schedule for the dentist and date
+    let schedule = await DentistSchedule.findOne({ dentistId, date });
 
     if (schedule) {
-      // Update only the specific dentist's schedule
+      // Update schedule for the specified date
       schedule.availableTime = availableTime;
       await schedule.save();
       return res.status(200).json({
@@ -47,8 +47,8 @@ exports.createDentistSchedule = async (req, res) => {
         schedule,
       });
     } else {
-      // Create a new schedule if none exists for the dentist
-      schedule = new DentistSchedule({ dentistId, availableTime });
+      // Create a new schedule for the dentist on the specified date
+      schedule = new DentistSchedule({ dentistId, date, availableTime });
       await schedule.save();
       return res.status(201).json({
         message: "Dentist schedule created successfully.",
@@ -63,25 +63,28 @@ exports.createDentistSchedule = async (req, res) => {
   }
 };
 
-// Retrieve a dentist's schedule by dentistId
+// Retrieve a dentist's schedule by dentistId and date
 exports.getDentistSchedule = async (req, res) => {
-  const dentistId = req.query.dentistId;
+  const { dentistId, date } = req.query;
 
-  if (!dentistId) {
+  // Validate required inputs
+  if (!dentistId || !date) {
     return res.status(400).json({
-      message: "Dentist ID is required.",
+      message: "Dentist ID and date are required.",
     });
   }
 
   try {
-    const schedule = await DentistSchedule.findOne({ dentistId });
+    // Find schedule for the specific dentist and date
+    const schedule = await DentistSchedule.findOne({ dentistId, date });
 
     if (!schedule) {
       return res.status(404).json({
-        message: `No schedule found for Dentist with ID ${dentistId}`,
+        message: `No schedule available for Dentist with ID ${dentistId} on ${date}.`,
       });
     }
 
+    // If schedule exists, return it
     return res.status(200).json({
       message: "Dentist schedule retrieved successfully.",
       schedule,
