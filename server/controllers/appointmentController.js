@@ -2,6 +2,7 @@ const Appointment = require("../models/appointmentModel")
 const Patient = require("../models/patientModel");
 const DentistSchedule = require('../models/dentistScheduleModel');
 const Dentist = require('../models/dentistModel');
+const moment = require('moment'); 
 
 const generateSlots = (startTime, endTime) => {
   const slots = [];
@@ -117,11 +118,12 @@ exports.getAvailableSlotsByDentistId = async (req, res) => {
   const { dentistId, date } = req.params;
 
   try {
-    // Retrieve the dentist's schedule to get all available slots
-    const schedule = await DentistSchedule.findOne({ dentistId });
+    // Retrieve the dentist's schedule for the specific date
+    const schedule = await DentistSchedule.findOne({ dentistId, date });
 
     if (!schedule) {
-      return res.status(404).json({ message: `No schedule found for Dentist with ID ${dentistId}` });
+      // If the schedule doesn't exist for the given date, return no slots available message
+      return res.status(404).json({ message: `No slots available for Dentist with ID ${dentistId} on ${date}` });
     }
 
     // Fetch existing appointments for the given dentist and date
@@ -135,7 +137,22 @@ exports.getAvailableSlotsByDentistId = async (req, res) => {
     const bookedSlots = existingAppointments.map(appointment => appointment.apt_time);
 
     // Filter available slots by excluding booked ones
-    const availableSlots = schedule.availableTime.filter(slot => !bookedSlots.includes(slot));
+    let availableSlots = schedule.availableTime.filter(slot => !bookedSlots.includes(slot));
+
+    // Get the current time
+    const currentTime = moment(); // Current time using moment.js
+
+    // Filter out slots that have already passed
+    availableSlots = availableSlots.filter(slot => {
+      const slotTime = moment(`${date} ${slot}`, "YYYY-MM-DD hh:mm A"); // Parse the slot time
+
+      // Only include future slots
+      return slotTime.isAfter(currentTime);
+    });
+
+    if (availableSlots.length === 0) {
+      return res.status(200).json({ message: `No available slots for Dentist with ID ${dentistId} on ${date}` });
+    }
 
     res.status(200).json({
       message: "Available slots for the given date",

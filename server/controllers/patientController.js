@@ -72,10 +72,41 @@ exports.createPatient = async (req, res) => {
   }
 };
 
-// Get all patients
+// Get all patients with their respective dentist's name using aggregate
 exports.getAllPatients = async (req, res) => {
   try {
-    const patients = await Patient.find();
+    const patients = await Patient.aggregate([
+      {
+        $lookup: {
+          from: "dentists", // Name of the dentist collection in MongoDB
+          localField: "dentistId", // The field in Patient document
+          foreignField: "dentistId", // The field in Dentist document (assuming it's dentistId)
+          as: "dentistDetails", // Alias for the result of the lookup
+        },
+      },
+      {
+        $unwind: {
+          path: "$dentistDetails", // Unwind the dentistDetails array to get each dentist name
+          preserveNullAndEmptyArrays: true, // Allow patients with no dentist to be returned
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          dob: 1,
+          age: 1,
+          gender: 1,
+          phone_no: 1,
+          past_history: 1,
+          current_status: 1,
+          address: 1,
+          dentistId:1,
+          dentistName: { $ifNull: ["$dentistDetails.name", "No Dentist Assigned"] }, // Default to 'No Dentist Assigned' if dentist is not found
+          pID: 1,
+        },
+      },
+    ]);
+
     if (patients.length === 0) {
       return res.status(404).json({ message: "No patients found" });
     }
