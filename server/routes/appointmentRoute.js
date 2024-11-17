@@ -22,7 +22,7 @@ router.get("/dentist/:pID", getDentistIdByPatientId);
 
 router.get("/:dentistId/available-slots/:date", getAvailableSlotsByDentistId);
 // Route to get a dentist's schedule by dentistId
-router.get("/schedule/:dentistId", getDentistSchedule);
+router.get("/schedule", getDentistSchedule);
 
 // Route to get appointment details by aptID
 router.get("/details/:aptID", getAppointmentDetailsByAptID);

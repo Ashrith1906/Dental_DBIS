@@ -11,6 +11,8 @@ exports.createReport = async(req,res) =>{
                   .status(404)
                   .json({ message: "Appointment does not exist" });
         }
+        const reportexists  = await Report.findOne({aptID:aptID});
+        if(reportexists) return res.json({message:"Report already exists for this appointment, kindly update the report"})
         const dentist = await Dentist.findOne({dentistId:appointment.dentistId})
         const newreport = new Report({
             aptID,
