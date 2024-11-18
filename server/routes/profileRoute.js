@@ -1,4 +1,3 @@
-// server/routes/profileRoute.js
 const express = require('express');
 const { createDentistProfile,getDentistProfile,updateDentistProfile, createReceptionistProfile,createDentistSchedule,getAllDentists } = require('../controllers/profileController');
 const router = express.Router();

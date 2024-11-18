@@ -2,6 +2,7 @@ const Report = require('../models/reportModel')
 const Appointment = require('../models/appointmentModel')
 const Dentist = require('../models/dentistModel')
 
+// To create a new report
 exports.createReport = async(req,res) =>{
     try {
         const  { aptID,primaryDiagnosis,prescription,procedures} = req.body
@@ -36,6 +37,7 @@ exports.createReport = async(req,res) =>{
     }
 }
 
+// To fetch a report
 exports.getReport = async(req,res) =>{
     try {
         const {aptID} = req.query; 
@@ -61,6 +63,7 @@ exports.getReport = async(req,res) =>{
       }
 }
 
+// To update a report
 exports.updateReport = async (req, res) => {
     const { aptID } = req.body;
   

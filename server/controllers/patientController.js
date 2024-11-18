@@ -218,6 +218,7 @@ exports.updatePatient = async (req, res) => {
   }
 };
 
+// To delete a patient by it's ID
 exports.deletePatientById = async (req, res) => {
   try {
     const { pID } = req.query;
