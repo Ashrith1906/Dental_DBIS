@@ -160,7 +160,7 @@ const Invoice = () => {
   return (
     <div>
       <ReceptionNavbar />
-      <div className="flex justify-center items-center min-h-screen bg-white-100">
+      <div className="flex justify-center items-center min-h-screen bg-white-100 px-5">
         <div className="w-full p-4 px-[30] mb-6 border border-gray-300 rounded-md shadow-md hover:shadow-xl transition-shadow duration-300 mx-5 my-1.5">
           <h1 className="text-3xl font-semibold text-teal-600 mb-6">Invoice</h1>
 
@@ -271,14 +271,14 @@ const Invoice = () => {
             <div className="flex justify-between mt-6">
               <button
                 type="submit"
-                className="bg-teal-600 text-white py-2 px-6 rounded-lg"
+                className="bg-teal-600 text-white py-2 px-4 rounded-lg"
               >
                 {isEditing ? "Update Invoice" : "Create Invoice"}
               </button>
               <button
                 type="button"
                 onClick={handlePrint}
-                className="bg-teal-600 text-white py-2 px-6 rounded-lg"
+                className="bg-teal-600 text-white py-2 px-4 rounded-lg"
               >
                 Print Invoice
               </button>

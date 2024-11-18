@@ -110,7 +110,7 @@ const PatientProfile = () => {
   return (
     <>
       <ReceptionNavbar />
-      <div className="flex justify-center items-center min-h-screen bg-white-100">
+      <div className="flex justify-center items-center min-h-screen bg-white-100 px-5">
       <div className="w-full p-4 px-[30px] mb-6 border border-gray-300 rounded-md shadow-md hover:shadow-xl transition-shadow duration-300 mx-5 my-3.5 ">
       <h1 className="text-3xl font-bold text-center text-teal-600">Create Patient Profile</h1>
           <form onSubmit={handleSubmit} className="space-y-6">
