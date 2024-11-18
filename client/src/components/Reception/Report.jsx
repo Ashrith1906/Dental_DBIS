@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ReceptionNavbar from "./ReceptionNavbar";
-
+import { FaUser, FaCalendarAlt, FaClock, FaTooth, FaVenusMars, FaBirthdayCake } from "react-icons/fa";
 const Report = () => {
   const [aptID, setAptID] = useState("");
   const [searchAptID, setSearchAptID] = useState("");
@@ -223,7 +223,7 @@ const Report = () => {
   return (
     <div>
       <ReceptionNavbar />
-      <div className="flex justify-center items-center min-h-screen bg-white-100">
+      <div className="flex justify-center items-center min-h-screen bg-white-100 px-5">
         <div class="w-full p-4 px-[30px] mb-6 border border-gray-300 rounded-md shadow-md hover:shadow-xl transition-shadow duration-300 mx-5 my-1.5">
           <h1 className="text-3xl font-semibold text-teal-600 mb-6">
             Patient Report
@@ -254,50 +254,62 @@ const Report = () => {
           </div>
 
           {appointmentDetails && (
-            <div className="mb-6">
-              <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
-                <div className="p-6">
-                  <h2 className="text-3xl font-semibold text-teal-700 mb-4">
-                    Appointment Details
-                  </h2>
-                  <ul className="space-y-4 text-lg text-gray-700">
-                    <li className="flex justify-between">
-                      <span className="font-medium text-teal-500">
-                        Patient Name:
-                      </span>
-                      <span>{appointmentDetails.patient.name}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="font-medium text-teal-500">Age:</span>
-                      <span>{appointmentDetails.patient.age}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="font-medium text-teal-500">Gender:</span>
-                      <span>{appointmentDetails.patient.gender}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="font-medium text-teal-500">
-                        Consulted Dentist:
-                      </span>
-                      <span>{appointmentDetails.dentist.name}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="font-medium text-teal-500">Date:</span>
-                      <span>
-                        {new Date(
-                          appointmentDetails.appointment.date
-                        ).toLocaleDateString()}
-                      </span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="font-medium text-teal-500">Time:</span>
-                      <span>{appointmentDetails.appointment.time}</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
+  <div className="mb-6">
+    <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
+      <div className="p-6">
+        <h2 className="text-3xl font-semibold text-teal-700 mb-4">
+          Appointment Details
+        </h2>
+        <ul className="space-y-4 text-lg text-gray-700">
+          <li className="flex justify-between items-center">
+            <span className="flex items-center">
+              <FaUser className="text-teal-500 mr-2" />
+              <span className="font-medium text-teal-500">Patient Name:</span>
+            </span>
+            <span>{appointmentDetails.patient.name}</span>
+          </li>
+          <li className="flex justify-between items-center">
+            <span className="flex items-center">
+              <FaBirthdayCake className="text-teal-500 mr-2" />
+              <span className="font-medium text-teal-500">Age:</span>
+            </span>
+            <span>{appointmentDetails.patient.age}</span>
+          </li>
+          <li className="flex justify-between items-center">
+            <span className="flex items-center">
+              <FaVenusMars className="text-teal-500 mr-2" />
+              <span className="font-medium text-teal-500">Gender:</span>
+            </span>
+            <span>{appointmentDetails.patient.gender}</span>
+          </li>
+          <li className="flex justify-between items-center">
+            <span className="flex items-center">
+              <FaTooth className="text-teal-500 mr-2" />
+              <span className="font-medium text-teal-500">Consulted Dentist:</span>
+            </span>
+            <span>{appointmentDetails.dentist.name}</span>
+          </li>
+          <li className="flex justify-between items-center">
+            <span className="flex items-center">
+              <FaCalendarAlt className="text-teal-500 mr-2" />
+              <span className="font-medium text-teal-500">Date:</span>
+            </span>
+            <span>
+              {new Date(appointmentDetails.appointment.date).toLocaleDateString()}
+            </span>
+          </li>
+          <li className="flex justify-between items-center">
+            <span className="flex items-center">
+              <FaClock className="text-teal-500 mr-2" />
+              <span className="font-medium text-teal-500">Time:</span>
+            </span>
+            <span>{appointmentDetails.appointment.time}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+)}
 
           {reportDetails ? (
             <form onSubmit={handleReportSubmit} className="space-y-6">
@@ -357,14 +369,14 @@ const Report = () => {
                 <button
                   type="submit"
                   disabled={!validateForm()}
-                  className="bg-teal-600 text-white py-2 px-6 rounded-lg disabled:opacity-50"
+                  className="bg-teal-600 text-white py-2 px-5 rounded-lg disabled:opacity-50"
                 >
                   {isEditing ? "Update Report" : "Create Report"}
                 </button>
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="bg-teal-600 text-white py-2 px-6 rounded-lg"
+                  className="bg-teal-600 text-white py-2 px-5 rounded-lg mx-1.5"
                 >
                   Print Report
                 </button>
