@@ -27,9 +27,12 @@ const Dentist = () => {
       }
 
       try {
-        const response = await axios.get(`http://localhost:3000/api/profiles/dentist`, {
-          params: { dentistId },
-        });
+        const response = await axios.get(
+          `http://localhost:3000/api/profiles/dentist`,
+          {
+            params: { dentistId },
+          }
+        );
         if (response.data && response.data.dentist) {
           setDentistName(response.data.dentist.name); // Set the dentist's name
         }
@@ -64,15 +67,40 @@ const Dentist = () => {
     fetchAppointments();
   }, [dentistId]);
 
-  const currentDate = new Date();
-
-  // Classify appointments into past and upcoming
-  const pastAppointments = appointments.filter(
-    (apt) => new Date(apt.apt_date) < currentDate
-  );
-  const upcomingAppointments = appointments.filter(
-    (apt) => new Date(apt.apt_date) >= currentDate
-  );
+  const getISTDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Date(date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  };
+  
+  const pastAppointments = appointments.filter((apt) => {
+    // Construct the appointment date-time in IST
+    const aptDateTimeStr = new Date(`${apt.apt_date.split("T")[0]}T${apt.apt_time}:00`);
+    const aptDateTimeIST = getISTDate(aptDateTimeStr);
+  
+    // Current date-time in IST
+    const currentDateTimeIST = getISTDate(new Date());
+  
+    console.log("Comparing Appointment Time (IST):", aptDateTimeIST);
+    console.log("Current Time (IST):", currentDateTimeIST);
+  
+    // Compare the appointment's IST date/time with the current IST date/time
+    return aptDateTimeIST < currentDateTimeIST;
+  });
+  
+  const upcomingAppointments = appointments.filter((apt) => {
+    // Construct the appointment date-time in IST
+    const aptDateTimeStr = new Date(`${apt.apt_date.split("T")[0]}T${apt.apt_time}:00`);
+    const aptDateTimeIST = getISTDate(aptDateTimeStr);
+  
+    // Current date-time in IST
+    const currentDateTimeIST = getISTDate(new Date());
+  
+    console.log("Comparing Appointment Time (IST):", aptDateTimeIST);
+    console.log("Current Time (IST):", currentDateTimeIST);
+  
+    // Compare the appointment's IST date/time with the current IST date/time
+    return aptDateTimeIST >= currentDateTimeIST;
+  });
 
   const renderAppointments = (appointments) => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
@@ -87,7 +115,8 @@ const Dentist = () => {
           </h3>
           <p className="text-gray-600 flex items-center">
             <FaCalendarAlt className="text-blue-500 mr-2" />
-            <strong>Date: </strong> {new Date(apt.apt_date).toLocaleDateString()}
+            <strong>Date: </strong>{" "}
+            {new Date(apt.apt_date).toLocaleDateString()}
           </p>
           <p className="text-gray-600 flex items-center">
             <FaClock className="text-green-500 mr-2" />
@@ -131,7 +160,7 @@ const Dentist = () => {
         {error && <p className="text-center text-red-500">Error: {error}</p>}
 
         <div className="grid gap-8">
-          <div className=" shadow-md rounded-lg p-6 shadow-md hover:shadow-xl transition-shadow duration-300 mx-5">
+          <div className=" shadow-md rounded-lg p-6  hover:shadow-xl transition-shadow duration-300 mx-5">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">
               Your Upcoming Appointments
             </h2>
@@ -142,7 +171,7 @@ const Dentist = () => {
             )}
           </div>
 
-          <div className=" shadow-md rounded-lg p-6 shadow-md hover:shadow-xl transition-shadow duration-300 mx-5">
+          <div className=" shadow-md rounded-lg p-6  hover:shadow-xl transition-shadow duration-300 mx-5">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">
               Your Past Appointments
             </h2>
@@ -159,4 +188,3 @@ const Dentist = () => {
 };
 
 export default Dentist;
-

@@ -15,11 +15,18 @@ const DentistNavbar = () => {
   return (
     <nav className="bg-teal-800 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="text-lg font-bold">Smile</div>
+        <div className="flex items-center space-x-2">
+          <img
+            src="/src/assets/Images/logo.png"
+            alt="Logo"
+            className="h-12 w-12"
+          />
+          <div className="text-2xl font-bold">Smile</div>
+        </div>
         <div className="hidden md:flex space-x-8">
           <Link
             to="/dentist"
-            className={`py-2 transition duration-200 ${
+            className={`py-2 text-xl transition duration-200 ${
               isActive("/dentist") ? "underline" : "hover:text-teal-300"
             }`}
           >
@@ -27,7 +34,7 @@ const DentistNavbar = () => {
           </Link>
           <Link
             to="/dentist-profile"
-            className={`py-2 transition duration-200 ${
+            className={`py-2 text-xl transition duration-200 ${
               isActive("/dentist-profile") ? "underline" : "hover:text-teal-300"
             }`}
           >
@@ -35,7 +42,7 @@ const DentistNavbar = () => {
           </Link>
           <Link
             to="/dentistschedule"
-            className={`py-2 transition duration-200 ${
+            className={`py-2 text-xl transition duration-200 ${
               isActive("/dentistschedule") ? "underline" : "hover:text-teal-300"
             }`}
           >
@@ -44,7 +51,7 @@ const DentistNavbar = () => {
 
           <Link
             to="/"
-            className="bg-red-500 px-5 py-2 rounded-md hover:bg-red-400 transition duration-200"
+            className="bg-red-500 text-xl px-5 py-2 rounded-md hover:bg-red-400 transition duration-200"
           >
             Logout
           </Link>
@@ -73,7 +80,7 @@ const DentistNavbar = () => {
             <div className="absolute top-16 right-4 bg-teal-700 rounded-md shadow-lg z-10 w-48 transition-all duration-300 ease-in-out">
               <Link
                 to="/dentist"
-                className={`block px-6 py-3 transition duration-200 ${
+                className={`block text-xl px-6 py-3 transition duration-200 ${
                   isActive("/dentist") ? "underline" : "hover:bg-teal-600"
                 }`}
               >
@@ -81,7 +88,7 @@ const DentistNavbar = () => {
               </Link>
               <Link
                 to="/dentist-profile"
-                className={`block px-6 py-3 transition duration-200 ${
+                className={`block px-6 text-xl py-3 transition duration-200 ${
                   isActive("/dentist-profile")
                     ? "underline"
                     : "hover:bg-teal-600"
@@ -91,7 +98,7 @@ const DentistNavbar = () => {
               </Link>
               <Link
                 to="/dentistschedule"
-                className={`block px-6 py-3 transition duration-200 ${
+                className={`block px-6 text-xl py-3 transition duration-200 ${
                   isActive("/dentistschedule")
                     ? "underline"
                     : "hover:bg-teal-600"
@@ -101,7 +108,7 @@ const DentistNavbar = () => {
               </Link>
               <Link
                 to="/"
-                className="block px-6 py-3 bg-red-500 rounded-b-md hover:bg-red-400 transition duration-200"
+                className="block px-6 text-xl py-3 bg-red-500 rounded-b-md hover:bg-red-400 transition duration-200"
               >
                 Logout
               </Link>

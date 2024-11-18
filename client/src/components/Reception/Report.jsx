@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ReceptionNavbar from "./ReceptionNavbar";
-import { FaUser, FaCalendarAlt, FaClock, FaTooth, FaVenusMars, FaBirthdayCake } from "react-icons/fa";
+import {
+  FaUser,
+  FaCalendarAlt,
+  FaClock,
+  FaTooth,
+  FaVenusMars,
+  FaBirthdayCake,
+} from "react-icons/fa";
 const Report = () => {
   const [aptID, setAptID] = useState("");
   const [searchAptID, setSearchAptID] = useState("");
@@ -126,83 +133,109 @@ const Report = () => {
       alert("No complete details available to print.");
       return;
     }
-
+  
     const { appointment, patient, dentist } = appointmentDetails;
     const printWindow = window.open("", "_blank");
     printWindow.document.write(`
       <html>
         <head>
           <title>Report - Appointment ID: ${searchAptID}</title>
-          <script src="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"></script>
+          <style>
+            /* You can adjust the style as needed */
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+              color: #333;
+              background-color: #f9f9f9;
+            }
+            .container {
+              width: 80%;
+              margin: 0 auto;
+              padding: 20px;
+              border: 1px solid #ddd;
+              border-radius: 10px;
+              background-color: #fff;
+            }
+            h1, h2 {
+              text-align: center;
+              color: #007bff;
+            }
+            .section {
+              margin-bottom: 20px;
+            }
+            .section ul {
+              list-style-type: none;
+              padding: 0;
+            }
+            .section li {
+              margin-bottom: 10px;
+            }
+            .section li span {
+              font-weight: bold;
+            }
+            .table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+            .table th, .table td {
+              padding: 8px;
+              border: 1px solid #ddd;
+              text-align: left;
+            }
+            .total {
+              font-size: 18px;
+              font-weight: bold;
+              text-align: right;
+            }
+          </style>
         </head>
-        <body class="bg-gray-50 font-sans text-gray-900 p-8">
-          <div class="max-w-4xl mx-auto bg-white p-8 shadow-lg rounded-lg border border-gray-200">
-            <h1 class="text-4xl font-extrabold text-teal-700 text-center mb-10">Patient Report</h1>
+        <body>
+          <div class="container">
+            <h1>Report - Appointment ID: ${searchAptID}</h1>
             
-            <!-- Appointment Details Section -->
-            <div class="section mb-10">
-              <h2 class="text-2xl font-semibold text-teal-600 mb-4 border-b-2 border-teal-600 pb-2">Appointment Details</h2>
-              <ul class="space-y-3 text-lg">
-                <li><span class="font-medium text-teal-500">Appointment ID:</span> ${
-                  appointment.aptID
-                }</li>
-                <li><span class="font-medium text-teal-500">Date:</span> ${new Date(
-                  appointment.date
-                ).toLocaleDateString()}</li>
-                <li><span class="font-medium text-teal-500">Time:</span> ${
-                  appointment.time
-                }</li>
+            <!-- Appointment Details -->
+            <div class="section">
+              <h2>Appointment Details</h2>
+              <ul>
+                <li><span>Appointment ID:</span> ${appointment.aptID}</li>
+                <li><span>Date:</span> ${new Date(appointment.date).toLocaleDateString()}</li>
+                <li><span>Time:</span> ${appointment.time}</li>
               </ul>
             </div>
-    
-            <!-- Patient Details Section -->
-            <div class="section mb-10">
-              <h2 class="text-2xl font-semibold text-teal-600 mb-4 border-b-2 border-teal-600 pb-2">Patient Details</h2>
-              <ul class="space-y-3 text-lg">
-                <li><span class="font-medium text-teal-500">Name:</span> ${
-                  patient.name
-                }</li>
-                <li><span class="font-medium text-teal-500">Age:</span> ${
-                  patient.age
-                }</li>
-                <li><span class="font-medium text-teal-500">Gender:</span> ${
-                  patient.gender
-                }</li>
+  
+            <!-- Patient Details -->
+            <div class="section">
+              <h2>Patient Details</h2>
+              <ul>
+                <li><span>Name:</span> ${patient.name}</li>
+                <li><span>Age:</span> ${patient.age}</li>
+                <li><span>Gender:</span> ${patient.gender}</li>
               </ul>
             </div>
-    
-            <!-- Dentist Details Section -->
-            <div class="section mb-10">
-              <h2 class="text-2xl font-semibold text-teal-600 mb-4 border-b-2 border-teal-600 pb-2">Dentist Details</h2>
-              <ul class="space-y-3 text-lg">
-                <li><span class="font-medium text-teal-500">Name:</span> ${
-                  dentist.name
-                }</li>
-                <li><span class="font-medium text-teal-500">Specialization:</span> ${
-                  dentist.specialization
-                }</li>
+  
+            <!-- Dentist Details -->
+            <div class="section">
+              <h2>Dentist Details</h2>
+              <ul>
+                <li><span>Name:</span> ${dentist.name}</li>
+                <li><span>Specialization:</span> ${dentist.specialization}</li>
               </ul>
             </div>
-    
-            <!-- Report Details Section -->
-            <div class="section mb-10">
-              <h2 class="text-2xl font-semibold text-teal-600 mb-4 border-b-2 border-teal-600 pb-2">Report Details</h2>
-              <div class="space-y-4 text-lg">
-                <p><span class="font-medium text-teal-500">Primary Diagnosis:</span> ${
-                  reportDetails.primaryDiagnosis
-                }</p>
-                <p><span class="font-medium text-teal-500">Prescription:</span> ${
-                  reportDetails.prescription
-                }</p>
-                <p><span class="font-medium text-teal-500">Procedures:</span> ${
-                  reportDetails.procedures
-                }</p>
-              </div>
+  
+            <!-- Report Details -->
+            <div class="section">
+              <h2>Report Details</h2>
+              <ul>
+                <li><span>Primary Diagnosis:</span> ${reportDetails.primaryDiagnosis}</li>
+                <li><span>Prescription:</span> ${reportDetails.prescription}</li>
+                <li><span>Procedures:</span> ${reportDetails.procedures}</li>
+              </ul>
             </div>
-    
+  
             <!-- Footer -->
-            <div class="text-center mt-12 border-t-2 border-gray-200 pt-4">
-              <p class="text-lg text-gray-600">Generated on: ${new Date().toLocaleString()}</p>
+            <div class="text-center mt-12">
+              <p>Generated on: ${new Date().toLocaleString()}</p>
             </div>
           </div>
         </body>
@@ -254,62 +287,70 @@ const Report = () => {
           </div>
 
           {appointmentDetails && (
-  <div className="mb-6">
-    <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
-      <div className="p-6">
-        <h2 className="text-3xl font-semibold text-teal-700 mb-4">
-          Appointment Details
-        </h2>
-        <ul className="space-y-4 text-lg text-gray-700">
-          <li className="flex justify-between items-center">
-            <span className="flex items-center">
-              <FaUser className="text-teal-500 mr-2" />
-              <span className="font-medium text-teal-500">Patient Name:</span>
-            </span>
-            <span>{appointmentDetails.patient.name}</span>
-          </li>
-          <li className="flex justify-between items-center">
-            <span className="flex items-center">
-              <FaBirthdayCake className="text-teal-500 mr-2" />
-              <span className="font-medium text-teal-500">Age:</span>
-            </span>
-            <span>{appointmentDetails.patient.age}</span>
-          </li>
-          <li className="flex justify-between items-center">
-            <span className="flex items-center">
-              <FaVenusMars className="text-teal-500 mr-2" />
-              <span className="font-medium text-teal-500">Gender:</span>
-            </span>
-            <span>{appointmentDetails.patient.gender}</span>
-          </li>
-          <li className="flex justify-between items-center">
-            <span className="flex items-center">
-              <FaTooth className="text-teal-500 mr-2" />
-              <span className="font-medium text-teal-500">Consulted Dentist:</span>
-            </span>
-            <span>{appointmentDetails.dentist.name}</span>
-          </li>
-          <li className="flex justify-between items-center">
-            <span className="flex items-center">
-              <FaCalendarAlt className="text-teal-500 mr-2" />
-              <span className="font-medium text-teal-500">Date:</span>
-            </span>
-            <span>
-              {new Date(appointmentDetails.appointment.date).toLocaleDateString()}
-            </span>
-          </li>
-          <li className="flex justify-between items-center">
-            <span className="flex items-center">
-              <FaClock className="text-teal-500 mr-2" />
-              <span className="font-medium text-teal-500">Time:</span>
-            </span>
-            <span>{appointmentDetails.appointment.time}</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="mb-6">
+              <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
+                <div className="p-6">
+                  <h2 className="text-3xl font-semibold text-teal-700 mb-4">
+                    Appointment Details
+                  </h2>
+                  <ul className="space-y-4 text-lg text-gray-700">
+                    <li className="flex justify-between items-center">
+                      <span className="flex items-center">
+                        <FaUser className="text-teal-500 mr-2" />
+                        <span className="font-medium text-teal-500">
+                          Patient Name:
+                        </span>
+                      </span>
+                      <span>{appointmentDetails.patient.name}</span>
+                    </li>
+                    <li className="flex justify-between items-center">
+                      <span className="flex items-center">
+                        <FaBirthdayCake className="text-teal-500 mr-2" />
+                        <span className="font-medium text-teal-500">Age:</span>
+                      </span>
+                      <span>{appointmentDetails.patient.age}</span>
+                    </li>
+                    <li className="flex justify-between items-center">
+                      <span className="flex items-center">
+                        <FaVenusMars className="text-teal-500 mr-2" />
+                        <span className="font-medium text-teal-500">
+                          Gender:
+                        </span>
+                      </span>
+                      <span>{appointmentDetails.patient.gender}</span>
+                    </li>
+                    <li className="flex justify-between items-center">
+                      <span className="flex items-center">
+                        <FaTooth className="text-teal-500 mr-2" />
+                        <span className="font-medium text-teal-500">
+                          Consulted Dentist:
+                        </span>
+                      </span>
+                      <span>{appointmentDetails.dentist.name}</span>
+                    </li>
+                    <li className="flex justify-between items-center">
+                      <span className="flex items-center">
+                        <FaCalendarAlt className="text-teal-500 mr-2" />
+                        <span className="font-medium text-teal-500">Date:</span>
+                      </span>
+                      <span>
+                        {new Date(
+                          appointmentDetails.appointment.date
+                        ).toLocaleDateString()}
+                      </span>
+                    </li>
+                    <li className="flex justify-between items-center">
+                      <span className="flex items-center">
+                        <FaClock className="text-teal-500 mr-2" />
+                        <span className="font-medium text-teal-500">Time:</span>
+                      </span>
+                      <span>{appointmentDetails.appointment.time}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
 
           {reportDetails ? (
             <form onSubmit={handleReportSubmit} className="space-y-6">
