@@ -1,6 +1,8 @@
 const Patient = require("../models/patientModel");
 const Dentist = require("../models/dentistModel");
 const Appointment = require("../models/appointmentModel");
+const Invoice = require('../models/invoiceModel')
+const Report = require('../models/reportModel')
 
 // Create a new patient
 exports.createPatient = async (req, res) => {
@@ -226,16 +228,26 @@ exports.deletePatientById = async (req, res) => {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    // Delete all appointments associated with the patient
-    await Appointment.deleteMany({ pID: pID });
+    // Find all appointments associated with the patient
+    const appointments = await Appointment.find({ pID: pID });
+    if (appointments.length > 0) {
+      const appointmentIds = appointments.map(appointment => appointment._id);
+
+      // Delete all invoices and reports linked to the appointments
+      await Invoice.deleteMany({ aptID: { $in: appointmentIds } });
+      await Report.deleteMany({ aptID: { $in: appointmentIds } });
+
+      // Delete all appointments
+      await Appointment.deleteMany({ pID: pID });
+    }
 
     res.status(200).json({
-      message: "Patient and associated appointments deleted successfully",
+      message: "Patient, associated appointments, invoices, and reports deleted successfully",
       patient,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error deleting patient",
+      message: "Error deleting patient and related data",
       error: error.message,
     });
   }
