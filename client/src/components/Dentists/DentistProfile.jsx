@@ -91,11 +91,11 @@ const DentistProfile = () => {
   return (
     <>
       <DentistNavbar />
-      <div className="flex justify-center items-center min-h-screen bg-gray-100 px-5"> {/* Added px-5 for 20px padding on both sides */}
-        <div className="w-full max-w-4xl p-8 space-y-6 bg-white rounded-lg shadow-md">
+      <div className="flex justify-center items-center min-h-screen bg-white-100 px-5 ">
+        <div className="w-full p-4 px-[30] mb-6 border border-gray-300 rounded-md shadow-md hover:shadow-xl transition-shadow duration-300 mx-5 my-1.5">
           <h2 className="text-2xl font-bold text-center text-teal-600">{isUpdating ? 'Update' : 'Create'} Your Profile</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 mx-2.5">
               <FaUser className="text-teal-600" />
               <label className="block text-gray-700">Name</label>
             </div>
@@ -108,7 +108,7 @@ const DentistProfile = () => {
               required
             />
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 mx-2.5">
               <FaPhone className="text-teal-600" />
               <label className="block text-gray-700">Phone Number</label>
             </div>
@@ -122,7 +122,7 @@ const DentistProfile = () => {
               maxLength={10}
             />
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 mx-2.5">
               <FaBriefcase className="text-teal-600" />
               <label className="block text-gray-700">Experience</label>
             </div>
@@ -134,7 +134,7 @@ const DentistProfile = () => {
               required
             />
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 mx-2.5">
               <FaMedkit className="text-teal-600" />
               <label className="block text-gray-700">Specialization</label>
             </div>
@@ -146,12 +146,15 @@ const DentistProfile = () => {
               required
             />
 
-            <button
+            <div className="flex justify-center">
+              <button
               type="submit"
-              className={`w-full ${isUpdating ? 'bg-green-500 hover:bg-green-400' : 'bg-teal-500 hover:bg-teal-400'} text-white py-2 rounded-md transition`}
+              className={`${isUpdating ? 'bg-teal-500 hover:bg-green-400' : 'bg-teal-500 hover:bg-teal-400'} text-white py-3 px-10 text-lg rounded-md transition font-bold`}
             >
-              {isUpdating ? 'Update Profile' : 'Save Profile'}
+              {isUpdating ? 'Update' : 'Save'}
             </button>
+            </div>
+            
           </form>
         </div>
       </div>

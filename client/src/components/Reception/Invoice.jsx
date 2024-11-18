@@ -3,167 +3,153 @@ import axios from "axios";
 import ReceptionNavbar from "./ReceptionNavbar";
 
 const Invoice = () => {
-  const [aptID, setAptID] = useState(""); // Store appointment ID
-  const [patientDetails, setPatientDetails] = useState({
-    name: "Loading...",
-    age: "Loading...",
-    gender: "Loading...",
-    phone_no: "Loading...",
-  }); // Store patient details
-  const [dentistDetails, setDentistDetails] = useState({
-    name: "Loading...",
-    specialization: "Loading...",
-  }); // Store dentist details
-  const [appointmentDetails, setAppointmentDetails] = useState({
-    date: "Loading...",
-    time: "Loading...",
-    reason: "Loading...",
-  }); // Store appointment details
+  const [aptID, setAptID] = useState("");
+  const [searchAptID, setSearchAptID] = useState("");
+  const [appointments, setAppointments] = useState([]);
   const [invoiceDetails, setInvoiceDetails] = useState({
-    items: [{ description: "", amount: "" }],
+    invoice_date: new Date().toISOString().slice(0, 10), // Default to today's date
     payment_status: false,
-  }); // Store invoice details
-  const [invoiceID, setInvoiceID] = useState(""); // Store the generated invoice ID
-  const [isEditing, setIsEditing] = useState(false); // Toggle for editing the invoice
+    items: [],
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState("");
 
-  // Fetch appointment and related details by aptID
+  // Fetch all appointments on component mount
   useEffect(() => {
-    const fetchDetails = async () => {
-      if (!aptID) return; // Prevent unnecessary calls
-
+    const fetchAppointments = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/appointments/details/${aptID}`
+          "http://localhost:3000/api/appointments/getAllAppointments"
         );
-        const { details } = response.data;
-
-        setPatientDetails(details.patient || {
-          name: "Not Available",
-          age: "Not Available",
-          gender: "Not Available",
-          phone_no: "Not Available",
-        });
-        setDentistDetails(details.dentist || {
-          name: "Not Available",
-          specialization: "Not Available",
-        });
-        setAppointmentDetails(details.appointment || {
-          date: "Not Available",
-          time: "Not Available",
-          reason: "Not Available",
-        });
+        setAppointments(response.data.appointment || []);
       } catch (error) {
-        console.error("Failed to fetch appointment details:", error);
-        alert("Unable to fetch appointment details. Please try again.");
+        console.error("Failed to fetch appointments:", error);
+        alert("Unable to fetch appointments. Please try again.");
       }
     };
 
-    fetchDetails();
-  }, [aptID]);
+    fetchAppointments();
+  }, []);
 
-  // Handle input change for invoice items (description and amount)
-  const handleInvoiceChange = (e, index) => {
-    const updatedItems = [...invoiceDetails.items];
-    updatedItems[index][e.target.name] = e.target.value;
-    setInvoiceDetails({ ...invoiceDetails, items: updatedItems });
+  // Fetch invoice details
+  const fetchInvoice = async () => {
+    if (!searchAptID) return;
+
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/invoice/get`,
+        { params: { aptID: searchAptID } }
+      );
+      const { data } = response;
+      if (data) {
+        // Format the date correctly and populate the form
+        setInvoiceDetails({
+          ...data,
+          invoice_date: data.invoice_date
+            ? new Date(data.invoice_date).toISOString().slice(0, 10)
+            : new Date().toISOString().slice(0, 10),
+        });
+        setIsEditing(true);
+      } else {
+        // No invoice found, switch to create mode
+        alert("No invoice found. Switching to create mode.");
+        setInvoiceDetails({
+          invoice_date: new Date().toISOString().slice(0, 10),
+          payment_status: false,
+          items: [],
+        });
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Failed to fetch invoice:", error);
+      alert("Unable to fetch invoice. Switching to create mode.");
+      setInvoiceDetails({
+        invoice_date: new Date().toISOString().slice(0, 10),
+        payment_status: false,
+        items: [],
+      });
+      setIsEditing(false);
+    }
   };
 
-  // Add a new invoice item
-  const handleAddItem = () => {
-    setInvoiceDetails({
-      ...invoiceDetails,
-      items: [...invoiceDetails.items, { description: "", amount: "" }],
-    });
-  };
+  useEffect(() => {
+    if (searchAptID) fetchInvoice();
+  }, [searchAptID]);
 
-  // Remove an invoice item
-  const handleRemoveItem = (index) => {
-    const updatedItems = invoiceDetails.items.filter((_, i) => i !== index);
-    setInvoiceDetails({ ...invoiceDetails, items: updatedItems });
-  };
-
-  // Toggle between editing and viewing modes
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-  };
-
-  // Submit the invoice data to the backend
   const handleInvoiceSubmit = async (e) => {
     e.preventDefault();
 
-    const invoiceData = {
-      aptID,
-      invoice_date: new Date(),
-      payment_status: invoiceDetails.payment_status,
-      items: invoiceDetails.items,
-    };
+    if (!invoiceDetails.invoice_date || invoiceDetails.items.length === 0) {
+      setError("All fields are required.");
+      return;
+    }
 
     try {
-      console.log(invoiceData);
-      const response = await axios.post("http://localhost:3000/api/invoice/create", invoiceData);
-      if (response.data.invoiceID) {
-        setInvoiceID(response.data.invoiceID); // Set the generated invoice ID
-        alert("Invoice saved successfully!");
-        setIsEditing(false); // Disable editing after submission
-      }
+      const endpoint = isEditing
+        ? "http://localhost:3000/api/invoice/update"
+        : "http://localhost:3000/api/invoice/create";
+      const method = isEditing ? "put" : "post";
+      const response = await axios[method](endpoint, {
+        aptID: searchAptID,
+        ...invoiceDetails,
+      });
+
+      alert(response.data.message || "Invoice saved successfully!");
+      fetchInvoice(); // Reload the updated invoice
+      setIsEditing(true);
+      setError("");
     } catch (error) {
       console.error("Failed to save invoice:", error);
       alert("Failed to save invoice. Please try again.");
     }
   };
 
-  // Print function that opens a new tab with the invoice content
+  const handleAddItem = () => {
+    setInvoiceDetails((prev) => ({
+      ...prev,
+      items: [...prev.items, { description: "", amount: 0 }],
+    }));
+  };
+
+  const handleRemoveItem = (index) => {
+    setInvoiceDetails((prev) => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index),
+    }));
+  };
+
   const handlePrint = () => {
+    if (!invoiceDetails) {
+      alert("No complete details available to print.");
+      return;
+    }
+
     const printWindow = window.open("", "_blank");
     printWindow.document.write(`
       <html>
         <head>
-          <title>Invoice - ${invoiceID}</title>
+          <title>Invoice - Appointment ID: ${searchAptID}</title>
           <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f1f5f9; color: #333; }
-            h1 { color: #005eb8; }
-            .section { margin-bottom: 20px; }
-            .section strong { color: #333; }
-            .section p { margin: 4px 0; }
+            /* Add your CSS here */
           </style>
         </head>
         <body>
-          <h1>Patient Invoice</h1>
-          <div class="section">
-            <h2>Invoice ID</h2>
-            <p><strong>Invoice ID:</strong> ${invoiceID}</p>
-          </div>
-          <div class="section">
-            <h2>Appointment Details</h2>
-            <p><strong>Appointment ID:</strong> ${aptID}</p>
-            <p><strong>Date:</strong> ${appointmentDetails.date}</p>
-            <p><strong>Time:</strong> ${appointmentDetails.time}</p>
-            <p><strong>Reason for Appointment:</strong> ${appointmentDetails.reason}</p>
-          </div>
-          <div class="section">
-            <h2>Patient Details</h2>
-            <p><strong>Name:</strong> ${patientDetails.name}</p>
-            <p><strong>Age:</strong> ${patientDetails.age}</p>
-            <p><strong>Gender:</strong> ${patientDetails.gender}</p>
-            <p><strong>Phone:</strong> ${patientDetails.phone_no}</p>
-          </div>
-          <div class="section">
-            <h2>Dentist Details</h2>
-            <p><strong>Dentist Name:</strong> ${dentistDetails.name}</p>
-            <p><strong>Specialization:</strong> ${dentistDetails.specialization}</p>
-          </div>
-          <div class="section">
-            <h2>Invoice Details</h2>
+          <h1>Invoice</h1>
+          <p>Appointment ID: ${searchAptID}</p>
+          <p>Invoice Date: ${new Date(invoiceDetails.invoice_date).toLocaleDateString()}</p>
+          <p>Payment Status: ${invoiceDetails.payment_status ? "Paid" : "Unpaid"}</p>
+          <ul>
             ${invoiceDetails.items
               .map(
-                (item, index) => `
-                  <p><strong>Description:</strong> ${item.description}</p>
-                  <p><strong>Amount:</strong> ${item.amount}</p>
-                `
+                (item) =>
+                  `<li>${item.description} - $${item.amount.toFixed(2)}</li>`
               )
               .join("")}
-            <p><strong>Payment Status:</strong> ${invoiceDetails.payment_status ? "Paid" : "Pending"}</p>
-          </div>
+          </ul>
+          <p>Total Amount: $${invoiceDetails.items.reduce(
+            (sum, item) => sum + item.amount,
+            0
+          ).toFixed(2)}</p>
         </body>
       </html>
     `);
@@ -174,168 +160,128 @@ const Invoice = () => {
   return (
     <div>
       <ReceptionNavbar />
+      <div className="flex justify-center items-center min-h-screen bg-white-100">
+        <div className="w-full p-4 px-[30] mb-6 border border-gray-300 rounded-md shadow-md hover:shadow-xl transition-shadow duration-300 mx-5 my-1.5">
+          <h1 className="text-3xl font-semibold text-teal-600 mb-6">Invoice</h1>
 
-      <div className="bg-gray-50 min-h-screen flex flex-col items-center py-8">
-        <div className="bg-white p-8 shadow-lg rounded-lg w-full max-w-3xl">
-          <h1 className="text-3xl font-semibold text-teal-700 mb-6">Invoice</h1>
-
-          {/* Appointment ID and Details */}
-          <div className="mb-6 bg-teal-50 p-4 rounded-lg shadow-sm">
-            <div className="flex items-center space-x-4">
-              <label htmlFor="aptID" className="font-medium text-teal-700 text-lg">
-                Appointment ID:
-              </label>
-              <input
-                type="text"
-                id="aptID"
-                value={aptID}
-                onChange={(e) => setAptID(e.target.value)}
-                className="p-2 border border-teal-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="Enter Appointment ID"
-              />
-            </div>
-
-            {aptID && (
-              <div className="mt-4 space-y-2">
-                <p>
-                  <strong>Date:</strong> {appointmentDetails.date}
-                </p>
-                <p>
-                  <strong>Time:</strong> {appointmentDetails.time}
-                </p>
-                <p>
-                  <strong>Reason for Appointment:</strong>{" "}
-                  {appointmentDetails.reason}
-                </p>
-              </div>
-            )}
+          <div className="mb-6">
+            <label htmlFor="appointment" className="block text-teal-700 text-lg">
+              Appointment ID
+            </label>
+            <select
+              id="appointment"
+              className="w-full mt-2 p-2 border border-gray-300 rounded-lg"
+              value={aptID}
+              onChange={(e) => {
+                setAptID(e.target.value);
+                setSearchAptID(e.target.value);
+              }}
+            >
+              <option value="">Select Appointment ID</option>
+              {appointments.map((apt) => (
+                <option key={apt.aptID} value={apt.aptID}>
+                  {apt.aptID}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Patient Details */}
-          {aptID && (
-            <div className="mb-6 bg-teal-50 p-4 rounded-lg shadow-sm">
-              <div className="space-y-2">
-                <p>
-                  <strong>Name:</strong> {patientDetails.name}
-                </p>
-                <p>
-                  <strong>Age:</strong> {patientDetails.age}
-                </p>
-                <p>
-                  <strong>Gender:</strong> {patientDetails.gender}
-                </p>
-                <p>
-                  <strong>Phone:</strong> {patientDetails.phone_no}
-                </p>
-              </div>
+          <form onSubmit={handleInvoiceSubmit} className="space-y-6">
+            <div >
+              <label className="block text-teal-700 text-lg">Invoice Date</label>
+              <input
+                type="date"
+                value={invoiceDetails.invoice_date}
+                onChange={(e) =>
+                  setInvoiceDetails((prev) => ({
+                    ...prev,
+                    invoice_date: e.target.value,
+                  }))
+                }
+                className="w-full p-3 border rounded-lg"
+                required
+              />
             </div>
-          )}
-
-          {/* Dentist Details */}
-          {aptID && (
-            <div className="mb-6 bg-teal-50 p-4 rounded-lg shadow-sm">
-              <div className="space-y-2">
-                <p>
-                  <strong>Dentist Name:</strong> {dentistDetails.name}
-                </p>
-                <p>
-                  <strong>Specialization:</strong> {dentistDetails.specialization}
-                </p>
-              </div>
+            <div>
+              <label className="block text-teal-700 text-lg">Payment Status</label>
+              <select
+                value={invoiceDetails.payment_status}
+                onChange={(e) =>
+                  setInvoiceDetails((prev) => ({
+                    ...prev,
+                    payment_status: e.target.value === "true",
+                  }))
+                }
+                className="w-full p-3 border rounded-lg"
+              >
+                <option value="false">Unpaid</option>
+                <option value="true">Paid</option>
+              </select>
             </div>
-          )}
-
-          {/* Invoice Items */}
-          <form onSubmit={handleInvoiceSubmit}>
-            {invoiceDetails.items.map((item, index) => (
-              <div key={index} className="mb-4 bg-teal-50 p-4 rounded-lg shadow-sm">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-4">
-                    <input
-                      type="text"
-                      name="description"
-                      value={item.description}
-                      onChange={(e) => handleInvoiceChange(e, index)}
-                      placeholder="Item Description"
-                      className="p-2 border border-teal-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div>
-                  <div className="flex items-center space-x-4 mt-2">
-                    <input
-                      type="number"
-                      name="amount"
-                      value={item.amount}
-                      onChange={(e) => handleInvoiceChange(e, index)}
-                      placeholder="Amount"
-                      className="p-2 border border-teal-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div>
+            <div>
+              <label className="block text-teal-700 text-lg">Items</label>
+              {invoiceDetails.items.map((item, index) => (
+                <div key={index} className="flex space-x-4 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Description"
+                    value={item.description}
+                    onChange={(e) =>
+                      setInvoiceDetails((prev) => {
+                        const items = [...prev.items];
+                        items[index].description = e.target.value;
+                        return { ...prev, items };
+                      })
+                    }
+                    className="w-2/3 p-2 border rounded-lg"
+                    required
+                  />
+                  <input
+                    type="number"
+                    placeholder="Amount"
+                    value={item.amount}
+                    onChange={(e) =>
+                      setInvoiceDetails((prev) => {
+                        const items = [...prev.items];
+                        items[index].amount = parseFloat(e.target.value) || 0;
+                        return { ...prev, items };
+                      })
+                    }
+                    className="w-1/3 p-2 border rounded-lg"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveItem(index)}
+                    className="text-red-500"
+                  >
+                    Remove
+                  </button>
                 </div>
-                <div className="mt-2">
-                  {invoiceDetails.items.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem(index)}
-                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                    >
-                      Remove Item
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-            <div className="mb-4">
+              ))}
               <button
                 type="button"
                 onClick={handleAddItem}
-                className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
+                className="bg-teal-600 text-white py-2 px-4 rounded-lg"
               >
                 Add Item
               </button>
             </div>
-
-            {/* Payment Status */}
-            <div className="mb-4">
-              <label className="font-medium text-teal-700">
-                Payment Status:
-              </label>
-              <select
-                value={invoiceDetails.payment_status}
-                onChange={(e) => setInvoiceDetails({ ...invoiceDetails, payment_status: e.target.value })}
-                className="p-2 border border-teal-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-teal-500"
+            {error && <p className="text-red-600">{error}</p>}
+            <div className="flex justify-between mt-6">
+              <button
+                type="submit"
+                className="bg-teal-600 text-white py-2 px-6 rounded-lg"
               >
-                <option value={false}>Pending</option>
-                <option value={true}>Paid</option>
-              </select>
-            </div>
-
-            <div className="flex space-x-4">
+                {isEditing ? "Update Invoice" : "Create Invoice"}
+              </button>
               <button
                 type="button"
-                onClick={handleEditToggle}
-                className="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600"
+                onClick={handlePrint}
+                className="bg-teal-600 text-white py-2 px-6 rounded-lg"
               >
-                {isEditing ? "Cancel Editing" : "Edit Invoice"}
+                Print Invoice
               </button>
-
-              {isEditing && (
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
-                >
-                  Save Invoice
-                </button>
-              )}
-
-              {!isEditing && (
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700"
-                >
-                  Print Invoice
-                </button>
-              )}
             </div>
           </form>
         </div>
@@ -345,169 +291,3 @@ const Invoice = () => {
 };
 
 export default Invoice;
-
-
-
-
-
-
-
-// import React, { useState } from "react";
-// import axios from "axios";
-// import ReceptionNavbar from "./ReceptionNavbar"; // Assuming you have this component
-
-// const Invoice = () => {
-//   const [aptID, setAptID] = useState(""); // Store appointment ID
-//   const [invoiceID, setInvoiceID] = useState(""); // Store generated Invoice ID
-//   const [invoiceDetails, setInvoiceDetails] = useState({
-//     invoice_date: new Date().toISOString().split("T")[0], // Set today's date by default
-//     payment_status: false,
-//     items: [{ description: "", amount: "" }],
-//   });
-
-//   // Handle input change for items (description and amount)
-//   const handleItemChange = (index, e) => {
-//     const newItems = [...invoiceDetails.items];
-//     newItems[index][e.target.name] = e.target.value;
-//     setInvoiceDetails({ ...invoiceDetails, items: newItems });
-//   };
-
-//   // Add new item row for description and amount
-//   const addItem = () => {
-//     setInvoiceDetails({
-//       ...invoiceDetails,
-//       items: [...invoiceDetails.items, { description: "", amount: "" }],
-//     });
-//   };
-
-//   // Remove an item row
-//   const removeItem = (index) => {
-//     const newItems = invoiceDetails.items.filter((_, i) => i !== index);
-//     setInvoiceDetails({ ...invoiceDetails, items: newItems });
-//   };
-
-//   // Handle invoice form submission
-//   const handleInvoiceSubmit = async (e) => {
-//     e.preventDefault();
-
-//     const invoiceData = {
-//       aptID,
-//       invoice_date: invoiceDetails.invoice_date,
-//       payment_status: invoiceDetails.payment_status,
-//       items: invoiceDetails.items,
-//     };
-
-//     try {
-//       const response = await axios.post("http://localhost:3000/api/invoice/create", invoiceData);
-//       if (response.data.invoiceID) {
-//         setInvoiceID(response.data.invoiceID); // Store the generated invoiceID
-//         alert("Invoice saved successfully!");
-//       }
-//     } catch (error) {
-//       console.error("Failed to save invoice:", error);
-//       alert("Failed to save invoice. Please try again.");
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <ReceptionNavbar /> {/* Assuming you have this component */}
-
-//       <div className="bg-gray-50 min-h-screen flex flex-col items-center py-8">
-//         <div className="bg-white p-8 shadow-lg rounded-lg w-full max-w-3xl">
-//           <h1 className="text-3xl font-semibold text-teal-700 mb-6">Create Invoice</h1>
-
-//           {/* Appointment ID and Invoice Details */}
-//           <div className="mb-6 bg-teal-50 p-4 rounded-lg shadow-sm">
-//             <div className="flex items-center space-x-4">
-//               <label htmlFor="aptID" className="font-medium text-teal-700 text-lg">
-//                 Appointment ID:
-//               </label>
-//               <input
-//                 type="text"
-//                 id="aptID"
-//                 value={aptID}
-//                 onChange={(e) => setAptID(e.target.value)}
-//                 className="p-2 border border-teal-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-//                 placeholder="Enter Appointment ID"
-//               />
-//             </div>
-//           </div>
-
-//           {/* Items Details */}
-//           <form onSubmit={handleInvoiceSubmit} className="space-y-6">
-//             <div>
-//               {invoiceDetails.items.map((item, index) => (
-//                 <div key={index} className="flex space-x-4 mb-4">
-//                   <input
-//                     type="text"
-//                     name="description"
-//                     value={item.description}
-//                     onChange={(e) => handleItemChange(index, e)}
-//                     placeholder="Item description"
-//                     className="p-3 border border-teal-300 rounded-md w-full"
-//                   />
-//                   <input
-//                     type="number"
-//                     name="amount"
-//                     value={item.amount}
-//                     onChange={(e) => handleItemChange(index, e)}
-//                     placeholder="Amount"
-//                     className="p-3 border border-teal-300 rounded-md w-full"
-//                   />
-//                   <button
-//                     type="button"
-//                     onClick={() => removeItem(index)}
-//                     className="bg-red-600 text-white p-3 rounded-md"
-//                   >
-//                     Remove
-//                   </button>
-//                 </div>
-//               ))}
-
-//               <button
-//                 type="button"
-//                 onClick={addItem}
-//                 className="bg-teal-600 text-white p-3 rounded-md mb-4"
-//               >
-//                 Add Item
-//               </button>
-//             </div>
-
-//             {/* Payment Status */}
-//             <div className="mb-4">
-//               <label className="block text-teal-700 text-lg">Payment Status</label>
-//               <select
-//                 value={invoiceDetails.payment_status}
-//                 onChange={(e) => setInvoiceDetails({ ...invoiceDetails, payment_status: e.target.value })}
-//                 className="p-3 border border-teal-300 rounded-md w-full"
-//               >
-//                 <option value={false}>Unpaid</option>
-//                 <option value={true}>Paid</option>
-//               </select>
-//             </div>
-
-//             {/* Submit Button */}
-//             <div className="flex items-center space-x-4">
-//               <button
-//                 type="submit"
-//                 className="bg-teal-600 text-white p-3 rounded-md hover:bg-teal-700"
-//               >
-//                 Save Invoice
-//               </button>
-//             </div>
-//           </form>
-
-//           {/* Display Invoice ID if saved */}
-//           {invoiceID && (
-//             <div className="mt-6 p-4 bg-teal-50 rounded-md">
-//               <strong>Invoice ID:</strong> {invoiceID}
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Invoice;

@@ -143,7 +143,7 @@ const DentistSchedule = () => {
       <div className="flex justify-center items-center min-h-screen  px-5">
         {" "}
         {/* Added px-5 for 20px padding on both sides */}
-        <div className="w-full max-w-4xl p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <div className="w-full p-4 px-[30px] mb-6 border border-gray-300 rounded-md shadow-md hover:shadow-xl transition-shadow duration-300 mx-5 my-1.5">
           <h2 className="text-2xl font-bold text-center text-teal-600">
             Manage Your Schedule
           </h2>
@@ -238,15 +238,15 @@ const DentistSchedule = () => {
               </button>
             </div>
 
-            <div className="mb-6">
+            <div className="flex justify-center">
               <button
                 type="submit"
-                className={`w-full py-3 text-white font-semibold rounded-lg ${
-                  loading ? "bg-teal-400" : "bg-teal-600 hover:bg-teal-700"
-                }`}
+                className={`text-white py-3 px-10 text-lg rounded-md transition ${
+                  loading ? "bg-teal-500 hover:bg-green-400" : "bg-teal-500 hover:bg-teal-400"
+                } font-bold`}
                 disabled={loading}
               >
-                {loading ? "Updating..." : "Save Schedule"}
+                {loading ? "Updating..." : "Save"}
               </button>
             </div>
           </form>
