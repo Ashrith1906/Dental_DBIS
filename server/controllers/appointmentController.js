@@ -6,6 +6,7 @@ const Invoice = require('../models/invoiceModel');
 const Report = require('../models/reportModel');
 const moment = require("moment");
 
+// To generate slots of 20 min each
 const generateSlots = (startTime, endTime) => {
   const slots = [];
   let start = new Date(`1970-01-01T${startTime}:00`);
@@ -121,6 +122,7 @@ exports.getDentistIdByPatientId = async (req, res) => {
   }
 };
 
+// To get available slots by dentistId
 exports.getAvailableSlotsByDentistId = async (req, res) => {
   const { dentistId, date } = req.params;
 
@@ -187,6 +189,7 @@ exports.getAvailableSlotsByDentistId = async (req, res) => {
   }
 };
 
+// To create new appointment
 exports.createAppointment = async (req, res) => {
   try {
     const { pID, date, slot, reason } = req.body;
@@ -271,6 +274,7 @@ exports.createAppointment = async (req, res) => {
   }
 };
 
+// To get all appointments by pID
 exports.getAllAppointmentsByPID = async (req, res) => {
   try {
     const pID = req.query.pID;
@@ -291,6 +295,7 @@ exports.getAllAppointmentsByPID = async (req, res) => {
   }
 };
 
+// To get all appointments by dentistId
 exports.getAllAppointmentsByDentistId = async (req, res) => {
   try {
     const dentistId = req.query.dentistId;
@@ -337,6 +342,7 @@ exports.getAllAppointmentsByDentistId = async (req, res) => {
   }
 };
 
+// To get all appointments
 exports.getAllAppointments = async (req, res) => {
   try {
     const appointment = await Appointment.find();
@@ -426,6 +432,7 @@ exports.getAppointmentDetailsByAptID = async (req, res) => {
   }
 };
 
+// To delete a appointment by Apt ID
 exports.deleteAppointmentByAptID = async (req,res) =>{
   const aptID = req.query.aptID
   const appointment = await Appointment.findOneAndDelete({aptID:aptID})

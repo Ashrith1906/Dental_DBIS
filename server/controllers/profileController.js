@@ -4,6 +4,7 @@ const Reception = require("../models/receptionModel");
 const User = require("../models/userModel");
 const DentistSchedule = require('../models/dentistScheduleModel');
 
+// To create a new dentist profile
 exports.createDentistProfile = async (req, res) => {
   const { dentistId, name, specialization, phone_no, experience } = req.body;
 
@@ -37,6 +38,7 @@ exports.createDentistProfile = async (req, res) => {
   }
 };
 
+// To get a dentist profile from dentistId
 exports.getDentistProfile = async (req, res) => {
   try {
     const { dentistId } = req.query; // Retrieve dentistId from query parameters
@@ -62,6 +64,7 @@ exports.getDentistProfile = async (req, res) => {
   }
 };
 
+// To update a dentist profile
 exports.updateDentistProfile = async (req, res) => {
   const { dentistId } = req.body;
 
@@ -96,6 +99,7 @@ exports.updateDentistProfile = async (req, res) => {
   }
 };
 
+// To get all dentists
 exports.getAllDentists = async (req, res) => {
   try {
     const dentists = await Dentist.find();
@@ -119,6 +123,7 @@ exports.getAllDentists = async (req, res) => {
   }
 };
 
+// To create a new receptionist profile 
 exports.createReceptionistProfile = async (req, res) => {
   const { receptionistId, name, phone_no, salary } = req.body;
 
@@ -172,6 +177,7 @@ exports.createReceptionistProfile = async (req, res) => {
   }
 };
 
+// To create a new dentist schedule
 exports.createDentistSchedule = async (req, res) => {
   try {
     const { dentistId, availableTime } = req.body;

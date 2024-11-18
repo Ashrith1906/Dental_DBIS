@@ -5,6 +5,7 @@ const Reception = require("../models/receptionModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+// To register a new user
 exports.register = async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -36,6 +37,7 @@ exports.register = async (req, res) => {
   }
 };
 
+// To login by a user
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;

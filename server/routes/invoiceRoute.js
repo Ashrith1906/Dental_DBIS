@@ -6,7 +6,7 @@ const {
   updateInvoice
 } = require('../controllers/invoiceController');
 
-// Create a new invoice
+
 router.post("/create", createInvoice);
 
 router.get('/get', getInvoiceById);
