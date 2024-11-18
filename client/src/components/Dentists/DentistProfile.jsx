@@ -93,7 +93,7 @@ const DentistProfile = () => {
       <DentistNavbar />
       <div className="flex justify-center items-center min-h-screen bg-gray-100 px-5"> {/* Added px-5 for 20px padding on both sides */}
         <div className="w-full max-w-4xl p-8 space-y-6 bg-white rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-center text-teal-600">{isUpdating ? 'Update' : 'Create'} Dentist Profile</h2>
+          <h2 className="text-2xl font-bold text-center text-teal-600">{isUpdating ? 'Update' : 'Create'} Your Profile</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-center space-x-2">
               <FaUser className="text-teal-600" />

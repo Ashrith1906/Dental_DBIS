@@ -50,19 +50,19 @@ const Dentist = () => {
         setLoading(false);
         return;
       }
-
+  
       try {
         const response = await axios.get(
           `http://localhost:3000/api/appointments/getAllAppointmentsByDentistID?dentistId=${dentistId}`
         );
-        setAppointments(response.data.appointment);
+        setAppointments(response.data.appointments); // Correct the field to 'appointments'
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || "An error occurred");
         setLoading(false);
       }
     };
-
+  
     fetchAppointments();
   }, [dentistId]);
 
@@ -100,7 +100,7 @@ const Dentist = () => {
           </p>
           <p className="text-gray-600 flex items-center">
             <FaUser className="text-yellow-500 mr-2" />
-            <strong>Patient ID:</strong> {apt.pID}
+            <strong>Patient Name:</strong> {apt.patientName}
           </p>
           <p className="text-gray-600 flex items-center">
             <FaClipboard className="text-gray-500 mr-2" />

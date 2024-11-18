@@ -11,6 +11,7 @@ const {
   getAllAppointmentsByDentistId,
   getAvailableSlotsByDentistId,
   getAppointmentDetailsByAptID,
+  deleteAppointmentByAptID
 } = require("../controllers/appointmentController");
 
 router.post("/create", createAppointment);
@@ -30,5 +31,6 @@ router.get("/details/:aptID", getAppointmentDetailsByAptID);
 router.get("/getAllAppointmentsByDentistId", getAllAppointmentsByDentistId);
 router.get("/getAllAppointmentsByPID", getAllAppointmentsByPID);
 router.get("/getAllAppointments", getAllAppointments);
+router.get('/deleteAppointmentByAptID',deleteAppointmentByAptID)
 
 module.exports = router;

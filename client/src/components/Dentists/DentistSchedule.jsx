@@ -21,11 +21,45 @@ const generateSlots = (startTime, endTime) => {
 
 const DentistSchedule = () => {
   const { dentistId } = useAuth(); // Get dentistId from the context
-  const [timeRanges, setTimeRanges] = useState([{ startTime: "", endTime: "" }]); // For handling multiple time ranges
+  const [timeRanges, setTimeRanges] = useState([
+    { startTime: "", endTime: "" },
+  ]); // For handling multiple time ranges
   const [loading, setLoading] = useState(false); // For loading state
   const [error, setError] = useState(""); // For error state
   const [availableTime, setAvailableTime] = useState([]); // Store generated time slots
+  const [availableSlots, setAvailableSlots] = useState([]); // Store available slots from API
   const [date, setDate] = useState("2024-11-18"); // Default date, can be dynamic
+
+  // Fetch available slots when component mounts or dentistId/date changes
+  useEffect(() => {
+    const fetchSlots = async () => {
+      if (!dentistId || !date) return; // Avoid unnecessary API calls
+
+      setLoading(true);
+      setError(""); // Clear previous errors
+
+      try {
+        const response = await axios.get(
+          `http://localhost:3000/api/appointments/${dentistId}/available-slots/${date}`
+        );
+
+        const { availableSlots } = response.data; // Extract available slots from the API response
+        if (availableSlots && availableSlots.length > 0) {
+          setAvailableSlots(availableSlots);
+        } else {
+          setAvailableSlots([]);
+        }
+      } catch (err) {
+        console.error(err);
+        // setError(err.response?.data?.message || "Failed to fetch available slots.");
+        setAvailableSlots([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSlots();
+  }, [dentistId, date]);
 
   // Fetch existing schedule when the component mounts or dentistId changes
   useEffect(() => {
@@ -35,7 +69,10 @@ const DentistSchedule = () => {
         const response = await axios.get(
           `http://localhost:3000/api/appointments/schedule?dentistId=${dentistId}&date=${date}`
         );
-        if (response.data.schedule && response.data.schedule.availableTime.length > 0) {
+        if (
+          response.data.schedule &&
+          response.data.schedule.availableTime.length > 0
+        ) {
           setAvailableTime(response.data.schedule.availableTime); // Set available times
         } else {
           setAvailableTime([]); // If no schedule, show empty
@@ -60,7 +97,7 @@ const DentistSchedule = () => {
     setError(""); // Reset error state
 
     // Generate slots for all time ranges
-    const generatedSlots = timeRanges.flatMap(range =>
+    const generatedSlots = timeRanges.flatMap((range) =>
       generateSlots(range.startTime, range.endTime)
     );
 
@@ -103,9 +140,13 @@ const DentistSchedule = () => {
   return (
     <>
       <DentistNavbar />
-      <div className="flex justify-center items-center min-h-screen  px-5"> {/* Added px-5 for 20px padding on both sides */}
+      <div className="flex justify-center items-center min-h-screen  px-5">
+        {" "}
+        {/* Added px-5 for 20px padding on both sides */}
         <div className="w-full max-w-4xl p-8 space-y-6 bg-white rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-center text-teal-600">Manage Your Schedule</h2>
+          <h2 className="text-2xl font-bold text-center text-teal-600">
+            Manage Your Schedule
+          </h2>
 
           {error && (
             <div className="mb-4 p-4 text-red-700 bg-red-100 border border-red-300 rounded-md">
@@ -121,7 +162,10 @@ const DentistSchedule = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-6">
-              <label htmlFor="date" className="block text-teal-600 font-medium mb-2">
+              <label
+                htmlFor="date"
+                className="block text-teal-600 font-medium mb-2"
+              >
                 Select Date
               </label>
               <input
@@ -148,7 +192,9 @@ const DentistSchedule = () => {
                     id={`startTime-${index}`}
                     className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     value={range.startTime}
-                    onChange={(e) => handleTimeRangeChange(index, "startTime", e.target.value)}
+                    onChange={(e) =>
+                      handleTimeRangeChange(index, "startTime", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -164,7 +210,9 @@ const DentistSchedule = () => {
                     id={`endTime-${index}`}
                     className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     value={range.endTime}
-                    onChange={(e) => handleTimeRangeChange(index, "endTime", e.target.value)}
+                    onChange={(e) =>
+                      handleTimeRangeChange(index, "endTime", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -203,16 +251,21 @@ const DentistSchedule = () => {
             </div>
           </form>
 
-          {availableTime.length > 0 && !loading && (
+          {/* Display available slots from the API */}
+          {availableSlots.length > 0 && !loading && (
             <div className="mt-8">
-              <h3 className="text-2xl font-semibold mb-4 text-teal-600">Your Slots:</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-teal-600">
+                Available Slots:
+              </h3>
               <div className="grid grid-cols-3 gap-4">
-                {availableTime.map((slot, index) => (
+                {availableSlots.map((slot, index) => (
                   <div
                     key={index}
                     className="bg-teal-100 text-center py-2 rounded-lg shadow-md hover:bg-teal-200"
                   >
-                    <span className="text-xl font-semibold text-teal-700">{slot}</span>
+                    <span className="text-xl font-semibold text-teal-700">
+                      {slot}
+                    </span>
                   </div>
                 ))}
               </div>
