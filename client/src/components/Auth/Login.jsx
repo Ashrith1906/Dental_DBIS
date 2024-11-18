@@ -68,44 +68,43 @@ const Login = () => {
       });
     }
   };
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-teal-50">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+        <h2 className="text-2xl font-bold mb-6 text-center text-teal-800">
           Login
         </h2>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="text-gray-900 font-semibold">Email</label>
-            <div className="flex items-center border border-gray-300 rounded-lg">
-              <FaEnvelope className="ml-3" />
+            <label className="text-teal-900 font-semibold">Email</label>
+            <div className="flex items-center border border-teal-300 rounded-lg focus-within:ring focus-within:ring-teal-500">
+              <FaEnvelope className="ml-3 text-teal-500" />
               <input
                 type="text"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 focus:outline-none focus:bg-white focus:ring-0 placeholder-gray-500"
+                className="w-full p-3 focus:outline-none focus:bg-teal-50 placeholder-teal-400"
                 required
               />
             </div>
           </div>
           <div>
-            <label className="text-gray-900 font-semibold">Password</label>
-            <div className="flex items-center border border-gray-300 rounded-lg">
-              <FaLock className="ml-3" />
+            <label className="text-teal-900 font-semibold">Password</label>
+            <div className="flex items-center border border-teal-300 rounded-lg focus-within:ring focus-within:ring-teal-500">
+              <FaLock className="ml-3 text-teal-500" />
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 focus:outline-none focus:bg-white focus:ring-0 placeholder-gray-500"
+                className="w-full p-3 focus:outline-none focus:bg-teal-50 placeholder-teal-400"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="mr-3 focus:outline-none"
+                className="mr-3 focus:outline-none text-teal-500"
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
@@ -113,7 +112,7 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className="w-full py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2"
+            className="w-full py-3 bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:bg-teal-700 focus:outline-none focus:ring focus:ring-teal-500"
           >
             Login
           </button>
@@ -121,15 +120,15 @@ const Login = () => {
         <div className="mt-4 text-center">
           <button
             onClick={() => navigate("/forgot-password")}
-            className="text-blue-500 hover:underline"
+            className="text-teal-600 hover:underline"
           >
             Forgot Password?
           </button>
           <div className="mt-2">
-            <span className="text-gray-600">Don't have an account? </span>
+            <span className="text-black-700">Don't have an account? </span>
             <button
               onClick={() => navigate("/register")}
-              className="text-blue-500 hover:underline"
+              className="text-teal-600 hover:underline"
             >
               Register here
             </button>
@@ -138,6 +137,7 @@ const Login = () => {
       </div>
     </div>
   );
+  
 };
 
 export default Login;

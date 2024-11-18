@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ReceptionNavbar from "./ReceptionNavbar";
+import { 
+  FaUser, 
+  FaCalendarAlt, 
+  FaClock, 
+  FaUserMd, 
+  FaVenusMars 
+} from "react-icons/fa";
 
 const PatientRecords = () => {
   const [patients, setPatients] = useState([]);
@@ -72,7 +79,7 @@ const PatientRecords = () => {
     <>
       <ReceptionNavbar />
       <div className="p-6">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Patient Records</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center text-teal-600">Patient Records</h1>
 
         {/* Search Bar */}
         <div className="mb-4 flex justify-end">
@@ -89,7 +96,7 @@ const PatientRecords = () => {
         <div className="overflow-x-auto">
           <table className="table-auto w-full border-collapse border border-gray-300">
             <thead>
-              <tr className="bg-blue-100 text-gray-700">
+              <tr className="bg-teal-100 text-gray-700">
                 <th
                   className="border border-gray-300 px-4 py-2 cursor-pointer text-left hover:bg-blue-200"
                   onClick={() => handleSort("pID")}
