@@ -2,8 +2,8 @@ const Appointment = require("../models/appointmentModel");
 const Patient = require("../models/patientModel");
 const DentistSchedule = require("../models/dentistScheduleModel");
 const Dentist = require("../models/dentistModel");
-const Invoice = require('../models/invoiceModel');
-const Report = require('../models/reportModel');
+const Invoice = require("../models/invoiceModel");
+const Report = require("../models/reportModel");
 const moment = require("moment");
 
 // To generate slots of 20 min each
@@ -132,11 +132,9 @@ exports.getAvailableSlotsByDentistId = async (req, res) => {
 
     if (!schedule) {
       // If the schedule doesn't exist for the given date, return no slots available message
-      return res
-        .status(404)
-        .json({
-          message: `No slots available for Dentist with ID ${dentistId} on ${date}`,
-        });
+      return res.status(404).json({
+        message: `No slots available for Dentist with ID ${dentistId} on ${date}`,
+      });
     }
 
     // Fetch existing appointments for the given dentist and date
@@ -168,11 +166,9 @@ exports.getAvailableSlotsByDentistId = async (req, res) => {
     });
 
     if (availableSlots.length === 0) {
-      return res
-        .status(200)
-        .json({
-          message: `No available slots for Dentist with ID ${dentistId} on ${date}`,
-        });
+      return res.status(200).json({
+        message: `No available slots for Dentist with ID ${dentistId} on ${date}`,
+      });
     }
 
     res.status(200).json({
@@ -180,36 +176,41 @@ exports.getAvailableSlotsByDentistId = async (req, res) => {
       availableSlots,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error fetching available slots",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fetching available slots",
+      error: error.message,
+    });
   }
 };
 
-// To create new appointment
+// // To create new appointment
+
 exports.createAppointment = async (req, res) => {
   try {
-    const { pID, date, slot, reason } = req.body;
+    const { pID, date, slot, reason, dentistId } = req.body;
 
     // Validate input
-    if (!pID || !date || !slot) {
-      return res
-        .status(400)
-        .json({ message: "pID, date, and slot are required fields." });
+    if (!pID || !date || !slot || !dentistId) {
+      return res.status(400).json({
+        message: "pID, date, slot, and dentistId are required fields.",
+      });
     }
 
     // Find patient by pID
     const patient = await Patient.findOne({ pID });
     if (!patient) {
-      return res
-        .status(404)
-        .json({ message: `Patient with ID ${pID} does not exist.` });
+      return res.status(404).json({
+        message: `Patient with ID ${pID} does not exist.`,
+      });
     }
 
-    const dentistId = patient.dentistId;
+    // Verify dentist exists
+    const dentist = await Dentist.findOne({ dentistId });
+    if (!dentist) {
+      return res.status(404).json({
+        message: `Dentist with ID ${dentistId} does not exist.`,
+      });
+    }
 
     // Retrieve dentist's schedule for the given date
     const dentistSchedule = await DentistSchedule.findOne({ dentistId, date });
@@ -228,7 +229,7 @@ exports.createAppointment = async (req, res) => {
       });
     }
 
-    // Check if an appointment already exists for the given details
+    // Check for existing appointment
     const existingAppointment = await Appointment.findOne({
       pID,
       dentistId,
@@ -254,13 +255,12 @@ exports.createAppointment = async (req, res) => {
 
     await newAppointment.save();
 
-    // Remove the booked slot from the dentist's schedule
+    // Remove the booked slot from the schedule
     dentistSchedule.availableTime = dentistSchedule.availableTime.filter(
       (time) => time !== slot
     );
     await dentistSchedule.save();
 
-    // Respond with the created appointment
     res.status(201).json({
       message: "Appointment created successfully.",
       appointment: newAppointment,
@@ -273,6 +273,90 @@ exports.createAppointment = async (req, res) => {
     });
   }
 };
+
+// exports.createAppointment = async (req, res) => {
+//   try {
+//     const { pID, date, slot, reason } = req.body;
+
+//     // Validate input
+//     if (!pID || !date || !slot) {
+//       return res
+//         .status(400)
+//         .json({ message: "pID, date, and slot are required fields." });
+//     }
+
+//     // Find patient by pID
+//     const patient = await Patient.findOne({ pID });
+//     if (!patient) {
+//       return res
+//         .status(404)
+//         .json({ message: `Patient with ID ${pID} does not exist.` });
+//     }
+
+//     const dentistId = patient.dentistId;
+
+//     // Retrieve dentist's schedule for the given date
+//     const dentistSchedule = await DentistSchedule.findOne({ dentistId, date });
+//     if (!dentistSchedule) {
+//       return res.status(404).json({
+//         message: `No schedule found for Dentist with ID ${dentistId} on ${date}.`,
+//       });
+//     }
+
+//     // Check if the slot exists in the available time
+//     if (!dentistSchedule.availableTime.includes(slot)) {
+//       return res.status(400).json({
+//         message: `Requested slot "${slot}" is not available. Available slots: ${dentistSchedule.availableTime.join(
+//           ", "
+//         )}`,
+//       });
+//     }
+
+//     // Check if an appointment already exists for the given details
+//     const existingAppointment = await Appointment.findOne({
+//       pID,
+//       dentistId,
+//       apt_date: date,
+//       apt_time: slot,
+//     });
+
+//     if (existingAppointment) {
+//       return res.status(400).json({
+//         message: `An appointment already exists for patient ${pID} with Dentist ${dentistId} on ${date} at ${slot}.`,
+//       });
+//     }
+
+//     // Create new appointment
+//     const newAppointment = new Appointment({
+//       pID,
+//       dentistId,
+//       apt_date: date,
+//       apt_time: slot,
+//       reason,
+//       status: "booked",
+//     });
+
+//     await newAppointment.save();
+
+//     // Remove the booked slot from the dentist's schedule
+//     dentistSchedule.availableTime = dentistSchedule.availableTime.filter(
+//       (time) => time !== slot
+//     );
+//     await dentistSchedule.save();
+
+//     // Respond with the created appointment
+//     res.status(201).json({
+//       message: "Appointment created successfully.",
+//       appointment: newAppointment,
+//     });
+//   } catch (error) {
+//     console.error("Error creating appointment:", error.message);
+//     res.status(500).json({
+//       message: "Internal server error. Please try again.",
+//       error: error.message,
+//     });
+//   }
+// };
 
 // To get all appointments by pID
 exports.getAllAppointmentsByPID = async (req, res) => {
@@ -308,22 +392,22 @@ exports.getAllAppointmentsByDentistId = async (req, res) => {
           from: "patients", // The collection to join with (case-sensitive)
           localField: "pID", // The field in the Appointment collection
           foreignField: "pID", // The field in the Patient collection
-          as: "patientInfo" // Alias for the joined data
-        }
+          as: "patientInfo", // Alias for the joined data
+        },
       },
       {
-        $unwind: "$patientInfo" // Flatten the patientInfo array
+        $unwind: "$patientInfo", // Flatten the patientInfo array
       },
       {
         $addFields: {
-          patientName: "$patientInfo.name" // Add patientName field
-        }
+          patientName: "$patientInfo.name", // Add patientName field
+        },
       },
       {
         $project: {
-          patientInfo: 0 // Exclude the full patientInfo object (optional)
-        }
-      }
+          patientInfo: 0, // Exclude the full patientInfo object (optional)
+        },
+      },
     ]);
 
     if (appointments.length === 0) {
@@ -423,21 +507,26 @@ exports.getAppointmentDetailsByAptID = async (req, res) => {
       details: appointmentDetails,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error retrieving appointment details",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error retrieving appointment details",
+      error: error.message,
+    });
   }
 };
 
 // To delete a appointment by Apt ID
-exports.deleteAppointmentByAptID = async (req,res) =>{
-  const aptID = req.query.aptID
-  const appointment = await Appointment.findOneAndDelete({aptID:aptID})
-  if(!appointment) return res.json({ message: `No appointment found with ID ${aptID}` })
-  Invoice.deleteMany({aptID:aptID})
-  Report.deleteMany({aptID:aptID})
-  res.status(200).json({message: "Appointment,associated invoice, and report are deleted successfully",appointment,});
-}
+exports.deleteAppointmentByAptID = async (req, res) => {
+  const aptID = req.query.aptID;
+  const appointment = await Appointment.findOneAndDelete({ aptID: aptID });
+  if (!appointment)
+    return res.json({ message: `No appointment found with ID ${aptID}` });
+  Invoice.deleteMany({ aptID: aptID });
+  Report.deleteMany({ aptID: aptID });
+  res
+    .status(200)
+    .json({
+      message:
+        "Appointment,associated invoice, and report are deleted successfully",
+      appointment,
+    });
+};

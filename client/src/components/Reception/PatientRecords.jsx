@@ -20,7 +20,7 @@ const PatientRecords = () => {
   // Fetch all patients
   const fetchPatients = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/patient/list");
+      const response = await axios.get("http://localhost:3000/api/patient");
       setPatients(response.data.patients);
       setFilteredPatients(response.data.patients);
       setLoading(false);
@@ -109,12 +109,12 @@ const PatientRecords = () => {
                 >
                   Name
                 </th>
-                <th
+                {/* <th
                   className="border border-gray-300 px-4 py-2 cursor-pointer text-left hover:bg-blue-200"
                   onClick={() => handleSort("name")}
                 >
-                  Consultant
-                </th>
+                  Current Consultant
+                </th> */}
                 <th
                   className="border border-gray-300 px-4 py-2 cursor-pointer text-left hover:bg-blue-200"
                   onClick={() => handleSort("age")}
@@ -151,7 +151,7 @@ const PatientRecords = () => {
                 >
                   <td className="border border-gray-300 px-4 py-2">{patient.pID}</td>
                   <td className="border border-gray-300 px-4 py-2">{patient.name}</td>
-                  <td className="border border-gray-300 px-4 py-2">{patient.dentistName}</td>
+                  {/* <td className="border border-gray-300 px-4 py-2">{patient.dentistName}</td> */}
                   <td className="border border-gray-300 px-4 py-2">{patient.age}</td>
                   <td className="border border-gray-300 px-4 py-2">{patient.gender}</td>
                   <td className="border border-gray-300 px-4 py-2">{patient.phone_no}</td>

@@ -9,7 +9,7 @@ const patientRoutes = require("./routes/patientRoute");
 const appointmentRoutes = require("./routes/appointmentRoute");
 const reportRoutes = require("./routes/reportRoute");
 const invoiceRoutes = require("./routes/invoiceRoute");
-
+const razorpayRoutes = require("./routes/razorpayRoute");
 const app = express();
 env.config();
 
@@ -32,6 +32,7 @@ app.use('/api/patient',patientRoutes);
 app.use('/api/appointments',appointmentRoutes);
 app.use('/api/report',reportRoutes);
 app.use('/api/invoice',invoiceRoutes);
+app.use("/api/razorpay",razorpayRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);

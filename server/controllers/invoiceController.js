@@ -59,3 +59,21 @@ exports.updateInvoice = async (req, res) => {
     res.status(400).json({ message: 'Error updating invoice', error: err.message });
   }
 };
+
+// PUT /api/invoice/pay
+exports.markInvoiceAsPaid = async (req, res) => {
+  const { aptID } = req.body;
+  try {
+    const invoice = await Invoice.findOneAndUpdate(
+      { aptID },
+      { payment_status: true },
+      { new: true }
+    );
+    if (!invoice) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+    res.json({ message: "Payment successful", invoice });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update invoice", error: error.message });
+  }
+};

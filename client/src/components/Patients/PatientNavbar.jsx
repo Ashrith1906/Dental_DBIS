@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-const DentistNavbar = () => {
+const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleMenu = () => setIsOpen(!isOpen);
 
-  // Function to determine if a link is active
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -23,40 +20,41 @@ const DentistNavbar = () => {
           />
           <div className="text-2xl font-bold">Smile</div>
         </div>
+
+        {/* Desktop Menu */}
         <div className="hidden md:flex space-x-8">
           <Link
-            to="/dentist"
+            to="/patient"
             className={`py-2 text-xl transition duration-200 ${
-              isActive("/dentist") ? "underline" : "hover:text-teal-300"
+              isActive("/patient") ? "underline" : "hover:text-teal-300"
             }`}
           >
             Home
           </Link>
           <Link
-            to="/dentist-profile"
+            to="/profile"
             className={`py-2 text-xl transition duration-200 ${
-              isActive("/dentist-profile") ? "underline" : "hover:text-teal-300"
+              isActive("/profile") ? "underline" : "hover:text-teal-300"
             }`}
           >
             Profile
           </Link>
           <Link
-            to="/dentistschedule"
+            to="/patient-reports"
             className={`py-2 text-xl transition duration-200 ${
-              isActive("/dentistschedule") ? "underline" : "hover:text-teal-300"
+              isActive("/patient-reports") ? "underline" : "hover:text-teal-300"
             }`}
           >
-            Schedule
+            Reports
           </Link>
           <Link
-            to="/reportsd"
+            to="/patient-payments"
             className={`py-2 text-xl transition duration-200 ${
-              isActive("/reportsd") ? "underline" : "hover:text-teal-300"
+              isActive("/patient-payments") ? "underline" : "hover:text-teal-300"
             }`}
           >
-            Patients
+            Payments
           </Link>
-
           <Link
             to="/"
             className="bg-red-500 text-xl px-5 py-2 rounded-md hover:bg-red-400 transition duration-200"
@@ -65,7 +63,7 @@ const DentistNavbar = () => {
           </Link>
         </div>
 
-        {/* Mobile Menu Toggle Button */}
+        {/* Mobile Menu Button */}
         <div className="md:hidden">
           <button onClick={toggleMenu} className="focus:outline-none">
             <svg
@@ -75,54 +73,44 @@ const DentistNavbar = () => {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16m-7 6h7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
             </svg>
           </button>
-          {/* Mobile Menu */}
+
+          {/* Mobile Dropdown Menu */}
           {isOpen && (
             <div className="absolute top-16 right-4 bg-teal-700 rounded-md shadow-lg z-10 w-48 transition-all duration-300 ease-in-out">
               <Link
-                to="/dentist"
+                to="/patient"
                 className={`block text-xl px-6 py-3 transition duration-200 ${
-                  isActive("/dentist") ? "underline" : "hover:bg-teal-600"
+                  isActive("/patient") ? "underline" : "hover:bg-teal-600"
                 }`}
               >
                 Home
               </Link>
               <Link
-                to="/dentist-profile"
-                className={`block px-6 text-xl py-3 transition duration-200 ${
-                  isActive("/dentist-profile")
-                    ? "underline"
-                    : "hover:bg-teal-600"
+                to="/profile"
+                className={`block text-xl px-6 py-3 transition duration-200 ${
+                  isActive("/profile") ? "underline" : "hover:bg-teal-600"
                 }`}
               >
                 Profile
               </Link>
               <Link
-                to="/dentistschedule"
-                className={`block px-6 text-xl py-3 transition duration-200 ${
-                  isActive("/dentistschedule")
-                    ? "underline"
-                    : "hover:bg-teal-600"
+                to="/patient-reports"
+                className={`block text-xl px-6 py-3 transition duration-200 ${
+                  isActive("/patient-reports") ? "underline" : "hover:bg-teal-600"
                 }`}
               >
-                Schedule
+                Reports
               </Link>
               <Link
-                to="/reportsd"
-                className={`block px-6 text-xl py-3 transition duration-200 ${
-                  isActive("/reportsd")
-                    ? "underline"
-                    : "hover:bg-teal-600"
+                to="/patient-payments"
+                className={`block text-xl px-6 py-3 transition duration-200 ${
+                  isActive("/patient-payments") ? "underline" : "hover:bg-teal-600"
                 }`}
               >
-                Patients
+                Payments
               </Link>
               <Link
                 to="/"
@@ -138,4 +126,4 @@ const DentistNavbar = () => {
   );
 };
 
-export default DentistNavbar;
+export default Navbar;

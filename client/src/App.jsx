@@ -7,12 +7,17 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Dentist from './components/Dentists/Dentist';
 import Receptionist from './components/Reception/Receptionist';
+import Patient from './components/Patients/Patient';
 import PatientProfile from './components/Reception/PatientProfile';
 import DentistProfile from './components/Dentists/DentistProfile';
 import PatientRecords from './components/Reception/PatientRecords';
 import Invoice from './components/Reception/Invoice';
 import Report from './components/Reception/Report';
 import DentistSchedule from './components/Dentists/DentistSchedule';
+import Profile from './components/Patients/Profile';
+import PatientReport from './components/Patients/PatientReport';
+import Payments from './components/Patients/Payments';
+import ReportD from './components/Dentists/ReportsD';
 
 const App = () => {
   return (
@@ -34,6 +39,27 @@ const App = () => {
           <Route
             path="/dentistschedule"
             element={<PrivateRoute role="Dentist" Component={DentistSchedule} />}
+          />
+          <Route
+            path="/reportsd"
+            element={<PrivateRoute role="Dentist" Component={ReportD} />}
+          />
+
+          <Route
+            path="/patient"
+            element={<PrivateRoute role="Patient" Component={Patient} />}
+          />
+          <Route
+            path="/profile"
+            element={<PrivateRoute role="Patient" Component={Profile} />}
+          />
+          <Route
+            path="/patient-reports"
+            element={<PrivateRoute role="Patient" Component={PatientReport} />}
+          />
+          <Route
+            path="/patient-payments"
+            element={<PrivateRoute role="Patient" Component={Payments} />}
           />
 
           <Route
