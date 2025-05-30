@@ -1,23 +1,27 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/contexts/AuthContext";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Dentist from './components/Dentists/Dentist';
-import Receptionist from './components/Reception/Receptionist';
-import Patient from './components/Patients/Patient';
-import PatientProfile from './components/Reception/PatientProfile';
-import DentistProfile from './components/Dentists/DentistProfile';
-import PatientRecords from './components/Reception/PatientRecords';
-import Invoice from './components/Reception/Invoice';
-import Report from './components/Reception/Report';
-import DentistSchedule from './components/Dentists/DentistSchedule';
-import Profile from './components/Patients/Profile';
-import PatientReport from './components/Patients/PatientReport';
-import Payments from './components/Patients/Payments';
-import ReportD from './components/Dentists/ReportsD';
+import Dentist from "./components/Dentists/Dentist";
+import Receptionist from "./components/Reception/Receptionist";
+import Patient from "./components/Patients/Patient";
+import PatientProfile from "./components/Reception/PatientProfile";
+import DentistProfile from "./components/Dentists/DentistProfile";
+import PatientRecords from "./components/Reception/PatientRecords";
+import Invoice from "./components/Reception/Invoice";
+import Report from "./components/Reception/Report";
+import DentistSchedule from "./components/Dentists/DentistSchedule";
+import Profile from "./components/Patients/Profile";
+import PatientReport from "./components/Patients/PatientReport";
+import Payments from "./components/Patients/Payments";
+import ReportD from "./components/Dentists/ReportsD";
 
 const App = () => {
   return (
@@ -38,7 +42,9 @@ const App = () => {
           />
           <Route
             path="/dentistschedule"
-            element={<PrivateRoute role="Dentist" Component={DentistSchedule} />}
+            element={
+              <PrivateRoute role="Dentist" Component={DentistSchedule} />
+            }
           />
           <Route
             path="/reportsd"
@@ -64,15 +70,21 @@ const App = () => {
 
           <Route
             path="/receptionist"
-            element={<PrivateRoute role="Receptionist" Component={Receptionist} />}
+            element={
+              <PrivateRoute role="Receptionist" Component={Receptionist} />
+            }
           />
           <Route
             path="/patient-profile"
-            element={<PrivateRoute role="Receptionist" Component={PatientProfile} />}
+            element={
+              <PrivateRoute role="Receptionist" Component={PatientProfile} />
+            }
           />
           <Route
             path="/patientrecords"
-            element={<PrivateRoute role="Receptionist" Component={PatientRecords} />}
+            element={
+              <PrivateRoute role="Receptionist" Component={PatientRecords} />
+            }
           />
           <Route
             path="/invoice"

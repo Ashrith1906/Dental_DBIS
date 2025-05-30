@@ -71,33 +71,37 @@ const Dentist = () => {
     const date = new Date(dateString);
     return new Date(date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
   };
-  
+
   const pastAppointments = appointments.filter((apt) => {
     // Construct the appointment date-time in IST
-    const aptDateTimeStr = new Date(`${apt.apt_date.split("T")[0]}T${apt.apt_time}:00`);
+    const aptDateTimeStr = new Date(
+      `${apt.apt_date.split("T")[0]}T${apt.apt_time}:00`
+    );
     const aptDateTimeIST = getISTDate(aptDateTimeStr);
-  
+
     // Current date-time in IST
     const currentDateTimeIST = getISTDate(new Date());
-  
+
     console.log("Comparing Appointment Time (IST):", aptDateTimeIST);
     console.log("Current Time (IST):", currentDateTimeIST);
-  
+
     // Compare the appointment's IST date/time with the current IST date/time
     return aptDateTimeIST < currentDateTimeIST;
   });
-  
+
   const upcomingAppointments = appointments.filter((apt) => {
     // Construct the appointment date-time in IST
-    const aptDateTimeStr = new Date(`${apt.apt_date.split("T")[0]}T${apt.apt_time}:00`);
+    const aptDateTimeStr = new Date(
+      `${apt.apt_date.split("T")[0]}T${apt.apt_time}:00`
+    );
     const aptDateTimeIST = getISTDate(aptDateTimeStr);
-  
+
     // Current date-time in IST
     const currentDateTimeIST = getISTDate(new Date());
-  
+
     console.log("Comparing Appointment Time (IST):", aptDateTimeIST);
     console.log("Current Time (IST):", currentDateTimeIST);
-  
+
     // Compare the appointment's IST date/time with the current IST date/time
     return aptDateTimeIST >= currentDateTimeIST;
   });
@@ -148,38 +152,86 @@ const Dentist = () => {
     </div>
   );
 
+  // return (
+  //   <>
+  //     <DentistNavbar />
+  //     <div className="container mx-auto px-4 py-8">
+  //       {/* Welcome message */}
+  //       <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
+  //         Welcome, {dentistName || "Dentist"}!
+  //       </h1>
+
+  //       {error && <p className="text-center text-red-500">Error: {error}</p>}
+
+  //       <div className="grid gap-8">
+  //         <div className=" shadow-md rounded-lg p-6  hover:shadow-xl transition-shadow duration-300 mx-5">
+  //           <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+  //             Your Upcoming Appointments
+  //           </h2>
+  //           {upcomingAppointments.length > 0 ? (
+  //             renderAppointments(upcomingAppointments)
+  //           ) : (
+  //             <p className="text-gray-500">No upcoming appointments.</p>
+  //           )}
+  //         </div>
+
+  //         <div className=" shadow-md rounded-lg p-6  hover:shadow-xl transition-shadow duration-300 mx-5">
+  //           <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+  //             Your Past Appointments
+  //           </h2>
+  //           {pastAppointments.length > 0 ? (
+  //             renderAppointments(pastAppointments)
+  //           ) : (
+  //             <p className="text-gray-500">No past appointments.</p>
+  //           )}
+  //         </div>
+  //       </div>
+  //     </div>
+  //   </>
+  // );
   return (
     <>
       <DentistNavbar />
-      <div className="container mx-auto px-4 py-8">
-        {/* Welcome message */}
-        <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
-          Welcome, {dentistName || "Dentist"}!
-        </h1>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-100 py-10 px-4">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl font-extrabold text-teal-700 text-center mb-10">
+            Welcome, {dentistName || "Dentist"}!
+          </h1>
 
-        {error && <p className="text-center text-red-500">Error: {error}</p>}
+          {error && (
+            <div className="text-center mb-6">
+              <p className="text-red-500 font-medium">Error: {error}</p>
+            </div>
+          )}
 
-        <div className="grid gap-8">
-          <div className=" shadow-md rounded-lg p-6  hover:shadow-xl transition-shadow duration-300 mx-5">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-              Your Upcoming Appointments
-            </h2>
-            {upcomingAppointments.length > 0 ? (
-              renderAppointments(upcomingAppointments)
-            ) : (
-              <p className="text-gray-500">No upcoming appointments.</p>
-            )}
-          </div>
+          <div className="grid gap-10">
+            {/* Upcoming Appointments */}
+            <div className="bg-white shadow-2xl rounded-2xl p-8 mx-4 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-shadow duration-300">
+              <h2 className="text-3xl font-extrabold text-teal-700 mb-6 flex items-center">
+                <FaCalendarAlt className="text-teal-400 mr-3" />
+                Upcoming Appointments
+              </h2>
+              {upcomingAppointments.length > 0 ? (
+                renderAppointments(upcomingAppointments)
+              ) : (
+                <p className="text-gray-500 text-sm">
+                  No upcoming appointments.
+                </p>
+              )}
+            </div>
 
-          <div className=" shadow-md rounded-lg p-6  hover:shadow-xl transition-shadow duration-300 mx-5">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-              Your Past Appointments
-            </h2>
-            {pastAppointments.length > 0 ? (
-              renderAppointments(pastAppointments)
-            ) : (
-              <p className="text-gray-500">No past appointments.</p>
-            )}
+            {/* Past Appointments */}
+            <div className="bg-white shadow-2xl rounded-2xl p-8 mx-4 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-shadow duration-300">
+              <h2 className="text-3xl font-extrabold text-teal-700 mb-6 flex items-center">
+                <FaClipboard className="text-teal-400 mr-3" />
+                Past Appointments
+              </h2>
+              {pastAppointments.length > 0 ? (
+                renderAppointments(pastAppointments)
+              ) : (
+                <p className="text-gray-500 text-sm">No past appointments.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
