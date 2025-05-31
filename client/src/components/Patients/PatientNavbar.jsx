@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import logo from '../../assets/Images/logo.png';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +22,7 @@ const Navbar = () => {
         {/* Logo + Title */}
         <div className="flex items-center space-x-3">
           <img
-            src="/src/assets/Images/logo.png"
+            src={logo}
             alt="Smile Logo"
             className="h-12 w-12 rounded-full shadow-md"
           />

@@ -51,83 +51,100 @@ const DentistRecords = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <p className="text-xl font-semibold text-emerald-600">Loading dentist records...</p>
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-xl font-semibold text-blue-500">Loading...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
+      <div className="flex justify-center items-center h-screen">
         <p className="text-xl font-semibold text-red-500">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
+    <>
       <ReceptionNavbar />
-      <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-100 p-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-extrabold text-teal-700 text-center mb-6">
+            Dentist Records
+          </h1>
 
-        <h1 className="text-4xl font-bold text-center text-emerald-700 mb-4">Dentist Records</h1>
+          {/* Search Bar */}
+          <div className="flex justify-end mb-6">
+            <div className="relative w-full sm:w-1/3">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <FaSearch />
+              </span>
+              <input
+                type="text"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 text-gray-700 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+                placeholder="Search by Name or Dentist ID"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
 
-        {/* Search Input */}
-        <div className="flex justify-end">
-          <div className="relative w-full max-w-sm">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <FaSearch />
-            </span>
-            <input
-              type="text"
-              placeholder="Search by Name or Dentist ID"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-md shadow focus:ring-2 focus:ring-emerald-600 focus:outline-none bg-white"
-            />
+          {/* Table */}
+          <div className="overflow-x-auto bg-white rounded-2xl shadow-2xl">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-teal-100 text-gray-700">
+                <tr>
+                  {[
+                    { key: "dentistId", label: "ID" },
+                    { key: "name", label: "Name" },
+                    { key: "specialization", label: "Specialization" },
+                    { key: "experience", label: "Experience" },
+                    { key: "phone_no", label: "Phone" },
+                    { key: "email", label: "Email" },
+                  ].map(({ key, label }) => (
+                    <th
+                      key={key}
+                      className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer hover:bg-blue-100"
+                      onClick={() => handleSort(key)}
+                    >
+                      {label}
+                      {sortConfig.key === key && (
+                        <span className="ml-2">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredDentists.map((dentist, index) => (
+                  <tr
+                    key={dentist._id}
+                    className={`${
+                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    } hover:bg-blue-50 transition-colors duration-200`}
+                  >
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{dentist.dentistId}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{dentist.name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{dentist.specialization}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{dentist.experience} yrs</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{dentist.phone_no}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{dentist.email}</td>
+                  </tr>
+                ))}
+                {filteredDentists.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="text-center text-gray-600 py-6 text-sm">
+                      No dentists found matching your search.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
-
-        {/* Table */}
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          <table className="min-w-full text-sm divide-y divide-slate-300">
-            <thead className="bg-emerald-100 uppercase text-gray-800 tracking-wider">
-              <tr>
-                {["dentistId", "name", "specialization", "experience", "phone_no", "email"].map((key) => (
-                  <th
-                    key={key}
-                    onClick={() => handleSort(key)}
-                    className="px-6 py-4 font-semibold text-left cursor-pointer hover:text-emerald-700 transition"
-                  >
-                    {key === "dentistId" ? "ID" :
-                      key === "phone_no" ? "Phone" :
-                      key.charAt(0).toUpperCase() + key.slice(1)}
-                    {sortConfig.key === key && (
-                      <span className="ml-1 text-emerald-600">
-                        {sortConfig.direction === "asc" ? "▲" : "▼"}
-                      </span>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {filteredDentists.map((dentist) => (
-                <tr key={dentist._id} className="hover:bg-emerald-50 transition">
-                  <td className="px-6 py-4">{dentist.dentistId}</td>
-                  <td className="px-6 py-4">{dentist.name}</td>
-                  <td className="px-6 py-4">{dentist.specialization}</td>
-                  <td className="px-6 py-4">{dentist.experience} yrs</td>
-                  <td className="px-6 py-4">{dentist.phone_no}</td>
-                  <td className="px-6 py-4">{dentist.email}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
       </div>
-    </div>
+    </>
   );
 };
 
