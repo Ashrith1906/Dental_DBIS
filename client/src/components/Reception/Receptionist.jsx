@@ -1,14 +1,13 @@
-import React from 'react'
-import Navbar from './ReceptionNavbar'
-import Appointments from './Appointments'
+import Navbar from "./ReceptionNavbar";
+import Appointments from "./Appointments";
 
 const Receptionist = () => {
   return (
     <>
-    <Navbar/>
-    <Appointments/>
+      <Navbar />
+      <Appointments />
     </>
-  )
-}
+  );
+};
 
-export default Receptionist
+export default Receptionist;

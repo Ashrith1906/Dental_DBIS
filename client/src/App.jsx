@@ -15,6 +15,7 @@ import Patient from "./components/Patients/Patient";
 import PatientProfile from "./components/Reception/PatientProfile";
 import DentistProfile from "./components/Dentists/DentistProfile";
 import PatientRecords from "./components/Reception/PatientRecords";
+import DentistRecords from "./components/Reception/DentistRecords";
 import Invoice from "./components/Reception/Invoice";
 import Report from "./components/Reception/Report";
 import DentistSchedule from "./components/Dentists/DentistSchedule";
@@ -84,6 +85,12 @@ const App = () => {
             path="/patientrecords"
             element={
               <PrivateRoute role="Receptionist" Component={PatientRecords} />
+            }
+          />
+          <Route
+            path="/dentistrecords"
+            element={
+              <PrivateRoute role="Receptionist" Component={DentistRecords} />
             }
           />
           <Route

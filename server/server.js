@@ -4,7 +4,7 @@ const env = require("dotenv");
 const cors = require("cors");
 
 const userRoutes = require("./routes/userRoute");
-const profileRoutes = require("./routes/profileRoute"); 
+const profileRoutes = require("./routes/profileRoute");
 const patientRoutes = require("./routes/patientRoute");
 const appointmentRoutes = require("./routes/appointmentRoute");
 const reportRoutes = require("./routes/reportRoute");
@@ -13,10 +13,15 @@ const razorpayRoutes = require("./routes/razorpayRoute");
 const app = express();
 env.config();
 
+// CORS setup: allow both localhost and your Render frontend
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173", // Dev frontend
+      "https://your-frontend.onrender.com", // Prod frontend (Replace with your actual domain)
+    ],
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
+    credentials: true, // Optional: if using cookies or auth headers
   })
 );
 
@@ -27,12 +32,12 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 app.use("/api/users", userRoutes);
-app.use('/api/profiles', profileRoutes);
-app.use('/api/patient',patientRoutes);
-app.use('/api/appointments',appointmentRoutes);
-app.use('/api/report',reportRoutes);
-app.use('/api/invoice',invoiceRoutes);
-app.use("/api/razorpay",razorpayRoutes);
+app.use("/api/profiles", profileRoutes);
+app.use("/api/patient", patientRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/report", reportRoutes);
+app.use("/api/invoice", invoiceRoutes);
+app.use("/api/razorpay", razorpayRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);

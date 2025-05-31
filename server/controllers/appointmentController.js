@@ -362,13 +362,18 @@ exports.createAppointment = async (req, res) => {
 exports.getAllAppointmentsByPID = async (req, res) => {
   try {
     const pID = req.query.pID;
-    const appointment = await Appointment.find({ pID: pID });
-    if (appointment.length === 0) {
-      return res.status(404).json({ message: "No appointments found" });
+
+    if (!pID) {
+      return res.status(400).json({ message: "Patient ID is required" });
     }
 
+    const appointment = await Appointment.find({ pID: pID });
+
     res.status(200).json({
-      message: "appointments retrieved successfully",
+      message:
+        appointment.length === 0
+          ? "No appointments found for this patient yet"
+          : "Appointments retrieved successfully",
       appointment,
     });
   } catch (error) {
@@ -384,42 +389,43 @@ exports.getAllAppointmentsByDentistId = async (req, res) => {
   try {
     const dentistId = req.query.dentistId;
 
-    // Use aggregation to join Appointments with Patients
+    if (!dentistId) {
+      return res.status(400).json({ message: "Dentist ID is required" });
+    }
+
     const appointments = await Appointment.aggregate([
-      { $match: { dentistId: dentistId } }, // Filter appointments by dentistId
+      { $match: { dentistId: dentistId } },
       {
         $lookup: {
-          from: "patients", // The collection to join with (case-sensitive)
-          localField: "pID", // The field in the Appointment collection
-          foreignField: "pID", // The field in the Patient collection
-          as: "patientInfo", // Alias for the joined data
+          from: "patients",
+          localField: "pID",
+          foreignField: "pID",
+          as: "patientInfo",
         },
       },
-      {
-        $unwind: "$patientInfo", // Flatten the patientInfo array
-      },
+      { $unwind: { path: "$patientInfo", preserveNullAndEmptyArrays: true } },
       {
         $addFields: {
-          patientName: "$patientInfo.name", // Add patientName field
+          patientName: "$patientInfo.name",
         },
       },
       {
         $project: {
-          patientInfo: 0, // Exclude the full patientInfo object (optional)
+          patientInfo: 0,
         },
       },
     ]);
 
-    if (appointments.length === 0) {
-      return res.status(404).json({ message: "No appointments found" });
-    }
-
-    res.status(200).json({
-      message: "Appointments retrieved successfully",
+    // ✅ Always return 200 with an array
+    return res.status(200).json({
+      message:
+        appointments.length === 0
+          ? "No appointments found for this dentist yet"
+          : "Appointments retrieved successfully",
       appointments,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error retrieving appointments",
       error: error.message,
     });

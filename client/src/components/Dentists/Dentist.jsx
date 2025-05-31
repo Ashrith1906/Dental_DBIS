@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import DentistNavbar from "./DentistNavbar";
@@ -28,7 +28,7 @@ const Dentist = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/profiles/dentist`,
+          `${import.meta.env.VITE_API_BASE_URL}profiles/dentist`,
           {
             params: { dentistId },
           }
@@ -54,7 +54,9 @@ const Dentist = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/appointments/getAllAppointmentsByDentistID?dentistId=${dentistId}`
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }appointments/getAllAppointmentsByDentistID?dentistId=${dentistId}`
         );
         setAppointments(response.data.appointments || []); // Ensure an empty array if no data
       } catch (err) {
