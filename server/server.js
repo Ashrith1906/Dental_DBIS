@@ -18,7 +18,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173", // Dev frontend
-      "https://your-frontend.onrender.com", // Prod frontend (Replace with your actual domain)
+      "https://smilify-xijm.onrender.com", // Prod frontend 
     ],
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
     credentials: true, // Optional: if using cookies or auth headers
