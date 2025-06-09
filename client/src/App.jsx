@@ -7,8 +7,7 @@ import {
 import { AuthProvider, useAuth } from "./components/contexts/AuthContext";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster } from "react-hot-toast";
 import Dentist from "./components/Dentists/Dentist";
 import Receptionist from "./components/Reception/Receptionist";
 import Patient from "./components/Patients/Patient";
@@ -28,6 +27,15 @@ const App = () => {
   return (
     <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <AuthProvider>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 2500,
+            style: {
+              fontSize: "14px",
+            },
+          }}
+        />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -102,7 +110,6 @@ const App = () => {
             element={<PrivateRoute role="Receptionist" Component={Report} />}
           />
         </Routes>
-        <ToastContainer position="top-right" autoClose={3000} />
       </AuthProvider>
     </Router>
   );

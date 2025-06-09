@@ -8,11 +8,16 @@ const PatientRecords = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
+  const [sortConfig, setSortConfig] = useState({
+    key: "name",
+    direction: "asc",
+  });
 
   const fetchPatients = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}patient`);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}patient`
+      );
       setPatients(response.data.patients);
       setFilteredPatients(response.data.patients);
       setLoading(false);
@@ -51,8 +56,12 @@ const PatientRecords = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-blue-50 to-teal-100">
-        <p className="text-xl font-semibold text-blue-500">Loading...</p>
+      <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-br from-blue-50 to-teal-100">
+        {/* Spinner */}
+        <div className="w-12 h-12 border-4 border-blue-300 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-xl font-semibold text-blue-500">
+          Loading patients...
+        </p>
       </div>
     );
   }
@@ -121,17 +130,32 @@ const PatientRecords = () => {
                       index % 2 === 0 ? "bg-gray-50" : "bg-white"
                     } hover:bg-blue-50 transition-colors duration-200`}
                   >
-                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{patient.pID}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{patient.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{patient.age}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{patient.gender}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{patient.phone_no}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{patient.address}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
+                      {patient.pID}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {patient.name}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {patient.age}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {patient.gender}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {patient.phone_no}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {patient.address}
+                    </td>
                   </tr>
                 ))}
                 {filteredPatients.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="text-center text-gray-600 py-6 text-sm">
+                    <td
+                      colSpan="6"
+                      className="text-center text-gray-600 py-6 text-sm"
+                    >
                       No patients found matching your search.
                     </td>
                   </tr>

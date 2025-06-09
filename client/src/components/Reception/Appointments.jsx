@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
-import Swal from "sweetalert2";
-import "react-toastify/dist/ReactToastify.css";
-import "sweetalert2/dist/sweetalert2.min.css";
+import toast from "react-hot-toast";
 
 const Appointments = () => {
   const [patients, setPatients] = useState([]);
@@ -107,8 +104,9 @@ const Appointments = () => {
 
   if (loading) {
     return (
-      <div className="text-center text-xl font-semibold text-teal-500">
-        Loading data...
+      <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-br from-blue-50 to-teal-100">
+        <div className="w-12 h-12 border-4 border-teal-300 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-xl font-semibold text-teal-600">Loading data...</p>
       </div>
     );
   }
@@ -236,7 +234,8 @@ const Appointments = () => {
 
         {/* Show Time Slots */}
         {selectedDate && scheduleLoading && (
-          <div className="text-center text-sm font-semibold text-gray-500 mb-4">
+          <div className="flex flex-col items-center text-sm font-semibold text-gray-500 mb-4">
+            <div className="w-6 h-6 border-4 border-teal-200 border-t-transparent rounded-full animate-spin mb-2"></div>
             Loading available slots...
           </div>
         )}

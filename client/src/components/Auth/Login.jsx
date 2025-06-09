@@ -1,10 +1,9 @@
-// src/components/Login.jsx
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaTooth } from "react-icons/fa";
-import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -12,9 +11,11 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}users/login`,
@@ -25,45 +26,23 @@ const Login = () => {
       localStorage.setItem("token", JSON.stringify(token));
       login(user);
 
-      Swal.fire({
-        title: "Success!",
-        text: "You have logged in successfully.",
-        icon: "success",
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 1300,
-        toast: true,
-        customClass: {
-          popup: "rounded-lg p-2",
-          title: "text-sm",
-          content: "text-xs",
-        },
-        width: "300px",
+      toast.success("You have logged in successfully.", {
+        position: "top-right",
+        duration: 1300,
       });
     } catch (error) {
-      Swal.fire({
-        title: "Login Failed",
-        text: "Invalid email or password. Please try again.",
-        icon: "error",
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 2500,
-        toast: true,
-        customClass: {
-          popup: "rounded-lg p-2",
-          title: "text-sm",
-          content: "text-xs",
-        },
-        width: "300px",
+      toast.error("Invalid email or password. Please try again.", {
+        position: "top-right",
+        duration: 2500,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-teal-100 px-4">
-      {/* Container with left banner + form */}
       <div className="flex w-full max-w-4xl shadow-2xl rounded-2xl overflow-hidden bg-white">
-        {/* Left Banner */}
         <div className="hidden md:flex flex-col justify-center bg-gradient-to-br from-teal-700 to-teal-900 text-white p-10 w-1/2">
           <FaTooth className="text-6xl mb-4" />
           <h2 className="text-5xl font-extrabold mb-3">Smile Dental Clinic</h2>
@@ -72,7 +51,6 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Right Login Form */}
         <div className="w-full md:w-1/2 p-8">
           <div className="flex flex-col items-center mb-6 md:hidden">
             <FaTooth className="text-5xl text-teal-500 mb-2" />
@@ -98,6 +76,7 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full p-3 bg-transparent focus:outline-none text-gray-700 placeholder-gray-400"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -114,11 +93,13 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full p-3 bg-transparent focus:outline-none text-gray-700 placeholder-gray-400"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="ml-2 text-teal-500 focus:outline-none"
+                  disabled={loading}
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
@@ -126,9 +107,35 @@ const Login = () => {
             </div>
             <button
               type="submit"
-              className="w-full py-3 bg-teal-500 text-white font-semibold rounded-xl hover:bg-teal-600 transition duration-300 shadow-md"
+              disabled={loading}
+              className={`w-full py-3 bg-teal-500 text-white font-semibold rounded-xl hover:bg-teal-600 transition duration-300 shadow-md flex justify-center items-center ${
+                loading ? "cursor-not-allowed opacity-70" : ""
+              }`}
             >
-              Login
+              {loading ? (
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+              ) : (
+                "Login"
+              )}
             </button>
           </form>
 
@@ -136,6 +143,7 @@ const Login = () => {
             <button
               onClick={() => navigate("/forgot-password")}
               className="text-teal-600 hover:underline"
+              disabled={loading}
             >
               Forgot Password?
             </button>
@@ -144,6 +152,7 @@ const Login = () => {
               <button
                 onClick={() => navigate("/register")}
                 className="text-teal-600 hover:underline"
+                disabled={loading}
               >
                 Register here
               </button>
