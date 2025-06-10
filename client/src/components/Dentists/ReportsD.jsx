@@ -594,6 +594,9 @@ import {
   FaSpinner,
 } from "react-icons/fa";
 import DentistNavbar from "./DentistNavbar";
+import ReportLayout from "../ReportLayout";
+import { renderToStaticMarkup } from "react-dom/server";
+import Footer from "../Footer";
 
 const ReportD = () => {
   const { dentistId } = useAuth(); // get dentistId from context
@@ -645,7 +648,7 @@ const ReportD = () => {
           if (!toastIds.current.fetchAppointments) {
             toastIds.current.fetchAppointments = toast.info(
               "You have no appointment history yet.",
-              { duration: 4000, id: "fetchAppointments" }
+              { duration: 2000, id: "fetchAppointments" }
             );
           }
         } else {
@@ -659,7 +662,7 @@ const ReportD = () => {
         if (!toastIds.current.fetchAppointments) {
           toastIds.current.fetchAppointments = toast.error(
             "Something went wrong while loading your appointments.",
-            { duration: 4000, id: "fetchAppointments" }
+            { duration: 2000, id: "fetchAppointments" }
           );
         }
         console.error("Failed to fetch appointments:", error);
@@ -698,7 +701,7 @@ const ReportD = () => {
           if (!toastIds.current.fetchDetails) {
             toastIds.current.fetchDetails = toast.info(
               "No details found for the selected appointment.",
-              { duration: 4000, id: "fetchDetails" }
+              { duration: 2000, id: "fetchDetails" }
             );
           }
           setAppointmentDetails(null);
@@ -707,7 +710,7 @@ const ReportD = () => {
         if (!toastIds.current.fetchDetails) {
           toastIds.current.fetchDetails = toast.error(
             "Couldn't load appointment details. Please try again.",
-            { duration: 4000, id: "fetchDetails" }
+            { duration: 2000, id: "fetchDetails" }
           );
         }
         console.error("Failed to fetch appointment details:", error);
@@ -762,7 +765,7 @@ const ReportD = () => {
             toastIds.current.fetchReport = toast(
               message || "No report found. Please create one.",
               {
-                duration: 4000,
+                duration: 2000,
                 id: "fetchReport",
               }
             );
@@ -772,7 +775,7 @@ const ReportD = () => {
         if (!toastIds.current.fetchReport) {
           toastIds.current.fetchReport = toast.error(
             "Unable to fetch report. Please try again.",
-            { duration: 4000, id: "fetchReport" }
+            { duration: 2000, id: "fetchReport" }
           );
         }
         console.error("Failed to fetch report:", error);
@@ -814,14 +817,14 @@ const ReportD = () => {
       });
 
       toast.success(response.data.message || "Report saved successfully!", {
-        duration: 4000,
+        duration: 2000,
         id: "submitReport",
       });
       setIsEditing(true);
       setError("");
     } catch (error) {
       toast.error("Failed to save report. Please try again.", {
-        duration: 4000,
+        duration: 2000,
         id: "submitReport",
       });
       console.error("Failed to save report:", error);
@@ -831,212 +834,47 @@ const ReportD = () => {
   };
 
   const handlePrint = () => {
-    if (!reportDetails || !appointmentDetails) {
-      toast.error("No complete details available to print.");
+    if (!appointmentDetails || !reportDetails) {
+      toast.error("Missing appointment or report details.");
       return;
     }
 
-    const { appointment, patient, dentist } = appointmentDetails;
-
     const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
-  <html>
-    <head>
-      <title>Report - Appointment ID: ${searchAptID}</title>
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    if (!printWindow) {
+      toast.error("Popup blocked! Please allow popups to print the report.");
+      return;
+    }
+
+    const htmlContent = renderToStaticMarkup(
+      <ReportLayout
+        appointmentDetails={appointmentDetails}
+        reportDetails={reportDetails}
       />
-      <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;900&display=swap');
+    );
 
-        body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          background: #f3f6f5;
-          color: #094d47;
-          padding: 20px 10px;
-          margin: 0;
-          -webkit-print-color-adjust: exact;
-          font-size: 14px;
-        }
-        .container {
-          max-width: 700px;
-          margin: auto;
-          background: #ffffff;
-          padding: 25px 30px;
-          border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-          border: 1px solid #d0e6e2;
-        }
-        h1 {
-          font-family: 'Poppins', sans-serif;
-          font-weight: 900;
-          font-size: 2rem;
-          text-align: center;
-          color: #05695f;
-          margin-bottom: 30px;
-          letter-spacing: 1.5px;
-        }
-        .section {
-          margin-bottom: 28px;
-          padding-bottom: 18px;
-          border-bottom: 2px solid #0f766e88;
-        }
-        .section:last-child {
-          border-bottom: none;
-          margin-bottom: 16px;
-          padding-bottom: 0;
-        }
-        .section h2 {
-          font-family: 'Poppins', sans-serif;
-          font-weight: 700;
-          font-size: 1.4rem;
-          color: #0f766e;
-          margin-bottom: 18px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          border-left: 5px solid #0f766e;
-          padding-left: 10px;
-          text-transform: uppercase;
-          letter-spacing: 0.07em;
-        }
-        ul {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
-        li {
-          display: flex;
-          align-items: center;
-          margin-bottom: 12px;
-          font-size: 1rem;
-          line-height: 1.3;
-        }
-        li:last-child {
-          margin-bottom: 0;
-        }
-        i.fa {
-          color: #0f766e;
-          min-width: 22px;
-          font-size: 16px;
-          margin-right: 10px;
-          text-align: center;
-          width: 22px;
-        }
-        span.label {
-          font-weight: 700;
-          min-width: 140px;
-          color: #055b4e;
-          letter-spacing: 0.04em;
-          text-transform: capitalize;
-        }
-        .footer {
-          text-align: center;
-          font-size: 0.9rem;
-          color: #0f766e99;
-          font-style: italic;
-          margin-top: 40px;
-          border-top: 1px solid #0f766e33;
-          padding-top: 14px;
-        }
-
-        @media print {
-          body {
-            background: white;
-            color: #094d47;
-            font-size: 13px;
+    printWindow.document.write(`
+    <html>
+      <head>
+        <title>Patient Report</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        <style>
+          @media print {
+            body {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
           }
-          .container {
-            box-shadow: none;
-            border: none;
-            padding: 0;
-            max-width: 100%;
-            margin: 0;
-          }
-          .section {
-            border-color: #0f766e44;
-            padding-bottom: 14px;
-            margin-bottom: 24px;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1><i class="fa fa-file-medical-alt"></i> Patient Report</h1>
-
-        <div class="section">
-          <h2><i class="fa fa-calendar-check"></i> Appointment Details</h2>
-          <ul>
-            <li><i class="fa fa-hashtag"></i> <span class="label">Appointment ID:</span> ${
-              appointment.aptID
-            }</li>
-            <li><i class="fa fa-calendar"></i> <span class="label">Date:</span> ${new Date(
-              appointment.date
-            ).toLocaleDateString()}</li>
-            <li><i class="fa fa-clock"></i> <span class="label">Time:</span> ${
-              appointment.time
-            }</li>
-          </ul>
-        </div>
-
-        <div class="section">
-          <h2><i class="fa fa-user"></i> Patient Details</h2>
-          <ul>
-            <li><i class="fa fa-id-badge"></i> <span class="label">Name:</span> ${
-              patient.fullName
-            }</li>
-            <li><i class="fa fa-venus-mars"></i> <span class="label">Gender:</span> ${
-              patient.gender
-            }</li>
-            <li><i class="fa fa-birthday-cake"></i> <span class="label">DOB:</span> ${new Date(
-              patient.dob
-            ).toLocaleDateString()}</li>
-          </ul>
-        </div>
-
-        <div class="section">
-          <h2><i class="fa fa-tooth"></i> Dentist Details</h2>
-          <ul>
-            <li><i class="fa fa-id-badge"></i> <span class="label">Name:</span> ${
-              dentist.fullName
-            }</li>
-            <li><i class="fa fa-venus-mars"></i> <span class="label">Gender:</span> ${
-              dentist.gender
-            }</li>
-          </ul>
-        </div>
-
-        <div class="section">
-          <h2><i class="fa fa-notes-medical"></i> Report</h2>
-          <ul>
-            <li><span class="label">Primary Diagnosis:</span> ${
-              reportDetails.primaryDiagnosis
-            }</li>
-            <li><span class="label">Prescription:</span> ${
-              reportDetails.prescription
-            }</li>
-            <li><span class="label">Procedures:</span> ${
-              reportDetails.procedures
-            }</li>
-          </ul>
-        </div>
-
-        <div class="footer">
-          Generated by Dentists Management System
-        </div>
-      </div>
-      <script>
-        window.print();
-        window.onafterprint = function () {
-          window.close();
-        };
-      </script>
-    </body>
-  </html>
+        </style>
+      </head>
+      <body class="bg-white p-10">
+        ${htmlContent}
+      </body>
+    </html>
   `);
+
     printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
   };
 
   const validateForm = () => {
@@ -1048,28 +886,26 @@ const ReportD = () => {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-100">
       <DentistNavbar />
-      <div className="p-10 max-w-6xl mx-auto bg-white rounded-xl shadow-md">
-        <h1 className="text-4xl font-extrabold mb-8 text-center text-teal-700">
-          Patient Report
-        </h1>
+      <div className="max-w-3xl mx-auto p-8">
+        <h2 className="text-3xl font-extrabold text-teal-700 text-center mb-6">
+          Manage Patient Report
+        </h2>
 
-        <div className="mb-6">
-          <label
-            htmlFor="appointment"
-            className="block mb-2 font-semibold text-gray-700"
-          >
-            Select Appointment:
+        {/* Appointment Dropdown */}
+        <div className="mb-6 border p-6 rounded-2xl shadow-xl bg-white">
+          <label className="block text-sm font-semibold text-teal-900 mb-2">
+            Select Appointment
           </label>
           {loadingAppointments ? (
-            <div className="flex items-center gap-2 text-teal-700">
-              <FaSpinner className="animate-spin" /> Loading appointments...
+            <div className="flex justify-center">
+              <FaSpinner className="animate-spin text-teal-600" size={24} />
             </div>
           ) : (
             <select
               id="appointment"
-              className="w-full p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              className="w-full p-3 rounded-xl bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
               value={aptID}
               onChange={(e) => {
                 setAptID(e.target.value);
@@ -1077,7 +913,7 @@ const ReportD = () => {
               }}
               disabled={loadingAppointments || submittingReport}
             >
-              <option value="">Select appointment</option>
+              <option value="">-- Select Appointment --</option>
               {appointments.map((appointment) => (
                 <option key={appointment.aptID} value={appointment.aptID}>
                   {appointment.aptID}
@@ -1087,56 +923,48 @@ const ReportD = () => {
           )}
         </div>
 
+        {/* Appointment Details */}
         {loadingDetails ? (
-          <div className="flex items-center gap-2 text-teal-700 mb-6">
-            <FaSpinner className="animate-spin" /> Loading appointment
-            details...
+          <div className="flex justify-center items-center h-32">
+            <FaSpinner className="animate-spin text-teal-600" size={28} />
           </div>
         ) : appointmentDetails ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 border border-gray-200 p-6 rounded-xl shadow-sm bg-gray-50">
-            <div>
-              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2 text-teal-600">
-                <FaUser /> Patient Details
-              </h2>
-              <p>
-                <strong>Name:</strong> {appointmentDetails.patient.fullName}
-              </p>
-              <p>
-                <strong>Gender:</strong> {appointmentDetails.patient.gender}
-              </p>
-              <p>
-                <strong>DOB:</strong>{" "}
+          <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
+            <h3 className="text-xl font-semibold text-teal-700 mb-4">
+              Appointment Details
+            </h3>
+            <ul className="space-y-2 text-gray-600">
+              <li>
+                <FaUser className="inline text-teal-500 mr-2" />{" "}
+                {appointmentDetails.patient.name}
+              </li>
+              <li>
+                <FaVenusMars className="inline text-teal-500 mr-2" /> Gender:{" "}
+                {appointmentDetails.patient.gender}
+              </li>
+              <li>
+                <FaBirthdayCake className="inline text-teal-500 mr-2" /> DOB:{" "}
                 {new Date(appointmentDetails.patient.dob).toLocaleDateString()}
-              </p>
-            </div>
-            <div>
-              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2 text-teal-600">
-                <FaCalendarAlt /> Appointment Details
-              </h2>
-              <p>
-                <strong>Date:</strong>{" "}
+              </li>
+              <li>
+                <FaTooth className="inline text-teal-500 mr-2" /> Dentist:{" "}
+                {appointmentDetails.dentist.name}
+              </li>
+              <li>
+                <FaCalendarAlt className="inline text-teal-500 mr-2" /> Date:{" "}
                 {new Date(
                   appointmentDetails.appointment.date
                 ).toLocaleDateString()}
-              </p>
-              <p>
-                <strong>Time:</strong> {appointmentDetails.appointment.time}
-              </p>
-            </div>
-            <div>
-              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2 text-teal-600">
-                <FaTooth /> Dentist Details
-              </h2>
-              <p>
-                <strong>Name:</strong> {appointmentDetails.dentist.fullName}
-              </p>
-              <p>
-                <strong>Gender:</strong> {appointmentDetails.dentist.gender}
-              </p>
-            </div>
+              </li>
+              <li>
+                <FaClock className="inline text-teal-500 mr-2" /> Time:{" "}
+                {appointmentDetails.appointment.time}
+              </li>
+            </ul>
           </div>
         ) : null}
 
+        {/* Report Form */}
         {(loadingReport || submittingReport) && (
           <div className="flex items-center gap-2 text-teal-700 mb-6">
             <FaSpinner className="animate-spin" />
@@ -1148,18 +976,21 @@ const ReportD = () => {
           </div>
         )}
 
-        <form onSubmit={handleReportSubmit} className="space-y-6">
+        <form
+          onSubmit={handleReportSubmit}
+          className="bg-white p-6 rounded-2xl shadow-2xl space-y-6"
+        >
+          <h3 className="text-xl font-semibold text-teal-700 mb-4">
+            {isEditing ? "Edit Report" : "Create Report"}
+          </h3>
+
           <div>
-            <label
-              htmlFor="primaryDiagnosis"
-              className="block mb-2 font-semibold text-gray-700"
-            >
-              Primary Diagnosis:
+            <label className="block text-sm font-medium text-teal-900 mb-1">
+              Primary Diagnosis
             </label>
             <textarea
-              id="primaryDiagnosis"
               rows="3"
-              className="w-full p-3 border border-gray-300 rounded-xl resize-none bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              className="w-full bg-gray-50 p-3 rounded-xl border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
               value={reportDetails.primaryDiagnosis}
               onChange={(e) =>
                 setReportDetails((prev) => ({
@@ -1173,16 +1004,12 @@ const ReportD = () => {
           </div>
 
           <div>
-            <label
-              htmlFor="prescription"
-              className="block mb-2 font-semibold text-gray-700"
-            >
-              Prescription:
+            <label className="block text-sm font-medium text-teal-900 mb-1">
+              Prescription
             </label>
             <textarea
-              id="prescription"
               rows="3"
-              className="w-full p-3 border border-gray-300 rounded-xl resize-none bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              className="w-full bg-gray-50 p-3 rounded-xl border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
               value={reportDetails.prescription}
               onChange={(e) =>
                 setReportDetails((prev) => ({
@@ -1191,21 +1018,17 @@ const ReportD = () => {
                 }))
               }
               disabled={loadingReport || submittingReport}
-              placeholder="Enter prescription details"
+              placeholder="Enter prescription"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="procedures"
-              className="block mb-2 font-semibold text-gray-700"
-            >
-              Procedures:
+            <label className="block text-sm font-medium text-teal-900 mb-1">
+              Procedures
             </label>
             <textarea
-              id="procedures"
               rows="3"
-              className="w-full p-3 border border-gray-300 rounded-xl resize-none bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              className="w-full bg-gray-50 p-3 rounded-xl border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
               value={reportDetails.procedures}
               onChange={(e) =>
                 setReportDetails((prev) => ({
@@ -1214,7 +1037,7 @@ const ReportD = () => {
                 }))
               }
               disabled={loadingReport || submittingReport}
-              placeholder="Enter procedures performed"
+              placeholder="Enter procedures"
             />
           </div>
 
@@ -1226,14 +1049,14 @@ const ReportD = () => {
             <button
               type="submit"
               disabled={!validateForm() || submittingReport || loadingReport}
-              className={`px-6 py-3 font-bold rounded-xl text-white shadow-lg transition-colors duration-300 ${
+              className={`px-4 py-3 font-bold m-2 rounded-xl text-white shadow-md transition ${
                 validateForm() && !submittingReport && !loadingReport
                   ? "bg-teal-700 hover:bg-teal-900"
                   : "bg-teal-300 cursor-not-allowed"
               }`}
             >
               {submittingReport ? (
-                <span className="flex items-center justify-center gap-2">
+                <span className="flex items-center gap-2 justify-center">
                   <FaSpinner className="animate-spin" />
                   Saving...
                 </span>
@@ -1248,14 +1071,15 @@ const ReportD = () => {
               type="button"
               onClick={handlePrint}
               disabled={submittingReport || loadingReport}
-              className="px-6 py-3 font-bold rounded-xl text-white bg-teal-600 hover:bg-teal-800 shadow-lg transition-colors duration-300"
+              className="px-4 py-3 m-2 font-bold rounded-xl text-white bg-gray-600 hover:bg-gray-700 shadow-md transition"
             >
               Print Report
             </button>
           </div>
         </form>
       </div>
-    </>
+      <Footer/>
+    </div>
   );
 };
 

@@ -2,6 +2,8 @@
 // import axios from "axios";
 // import ReceptionNavbar from "./ReceptionNavbar";
 // import { FaSearch } from "react-icons/fa";
+// import { Loader2 } from "lucide-react";
+// import Footer from "../Footer";
 
 // const DentistRecords = () => {
 //   const [dentists, setDentists] = useState([]);
@@ -9,11 +11,16 @@
 //   const [loading, setLoading] = useState(true);
 //   const [error, setError] = useState("");
 //   const [searchTerm, setSearchTerm] = useState("");
-//   const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
+//   const [sortConfig, setSortConfig] = useState({
+//     key: "name",
+//     direction: "asc",
+//   });
 
 //   const fetchDentists = async () => {
 //     try {
-//       const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}profiles/getAllDentists`);
+//       const response = await axios.get(
+//         `${import.meta.env.VITE_API_BASE_URL}profiles/getAllDentists`
+//       );
 //       setDentists(response.data.dentists);
 //       setFilteredDentists(response.data.dentists);
 //       setLoading(false);
@@ -28,16 +35,18 @@
 //   }, []);
 
 //   useEffect(() => {
-//     const result = dentists.filter((dentist) =>
-//       dentist.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       dentist.dentistId?.toString().includes(searchTerm)
+//     const result = dentists.filter(
+//       (dentist) =>
+//         dentist.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         dentist.dentistId?.toString().includes(searchTerm)
 //     );
 //     setFilteredDentists(result);
 //   }, [searchTerm, dentists]);
 
 //   const handleSort = (key) => {
 //     let direction = "asc";
-//     if (sortConfig.key === key && sortConfig.direction === "asc") direction = "desc";
+//     if (sortConfig.key === key && sortConfig.direction === "asc")
+//       direction = "desc";
 //     setSortConfig({ key, direction });
 
 //     const sorted = [...filteredDentists].sort((a, b) => {
@@ -51,8 +60,11 @@
 
 //   if (loading) {
 //     return (
-//       <div className="flex justify-center items-center h-screen">
-//         <p className="text-xl font-semibold text-blue-500">Loading...</p>
+//       <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-br from-blue-50 to-teal-100">
+//         <Loader2 className="w-10 h-10 text-teal-600 animate-spin mb-4" />
+//         <p className="text-xl font-semibold text-teal-700">
+//           Loading patients...
+//         </p>
 //       </div>
 //     );
 //   }
@@ -110,7 +122,9 @@
 //                     >
 //                       {label}
 //                       {sortConfig.key === key && (
-//                         <span className="ml-2">{sortConfig.direction === "asc" ? "▲" : "▼"}</span>
+//                         <span className="ml-2">
+//                           {sortConfig.direction === "asc" ? "▲" : "▼"}
+//                         </span>
 //                       )}
 //                     </th>
 //                   ))}
@@ -124,17 +138,32 @@
 //                       index % 2 === 0 ? "bg-gray-50" : "bg-white"
 //                     } hover:bg-blue-50 transition-colors duration-200`}
 //                   >
-//                     <td className="px-6 py-4 text-sm text-gray-700 font-medium">{dentist.dentistId}</td>
-//                     <td className="px-6 py-4 text-sm text-gray-700">{dentist.name}</td>
-//                     <td className="px-6 py-4 text-sm text-gray-700">{dentist.specialization}</td>
-//                     <td className="px-6 py-4 text-sm text-gray-700">{dentist.experience} yrs</td>
-//                     <td className="px-6 py-4 text-sm text-gray-700">{dentist.phone_no}</td>
-//                     <td className="px-6 py-4 text-sm text-gray-700">{dentist.email}</td>
+//                     <td className="px-6 py-4 text-sm text-gray-700 font-medium">
+//                       {dentist.dentistId}
+//                     </td>
+//                     <td className="px-6 py-4 text-sm text-gray-700">
+//                       {dentist.name}
+//                     </td>
+//                     <td className="px-6 py-4 text-sm text-gray-700">
+//                       {dentist.specialization}
+//                     </td>
+//                     <td className="px-6 py-4 text-sm text-gray-700">
+//                       {dentist.experience} yrs
+//                     </td>
+//                     <td className="px-6 py-4 text-sm text-gray-700">
+//                       {dentist.phone_no}
+//                     </td>
+//                     <td className="px-6 py-4 text-sm text-gray-700">
+//                       {dentist.email}
+//                     </td>
 //                   </tr>
 //                 ))}
 //                 {filteredDentists.length === 0 && (
 //                   <tr>
-//                     <td colSpan="6" className="text-center text-gray-600 py-6 text-sm">
+//                     <td
+//                       colSpan="6"
+//                       className="text-center text-gray-600 py-6 text-sm"
+//                     >
 //                       No dentists found matching your search.
 //                     </td>
 //                   </tr>
@@ -144,6 +173,7 @@
 //           </div>
 //         </div>
 //       </div>
+//       <Footer/>
 //     </>
 //   );
 // };
@@ -154,6 +184,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import ReceptionNavbar from "./ReceptionNavbar";
 import { FaSearch } from "react-icons/fa";
+import { Loader2 } from "lucide-react";
+import Footer from "../Footer";
 
 const DentistRecords = () => {
   const [dentists, setDentists] = useState([]);
@@ -165,6 +197,8 @@ const DentistRecords = () => {
     key: "name",
     direction: "asc",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 5;
 
   const fetchDentists = async () => {
     try {
@@ -191,6 +225,7 @@ const DentistRecords = () => {
         dentist.dentistId?.toString().includes(searchTerm)
     );
     setFilteredDentists(result);
+    setCurrentPage(1); // Reset to page 1 when search term changes
   }, [searchTerm, dentists]);
 
   const handleSort = (key) => {
@@ -208,29 +243,17 @@ const DentistRecords = () => {
     setFilteredDentists(sorted);
   };
 
+  // Pagination Logic
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentDentists = filteredDentists.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(filteredDentists.length / recordsPerPage);
+
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen text-blue-500">
-        <svg
-          className="animate-spin h-8 w-8 mb-3 text-blue-500"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-            fill="none"
-          />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-          />
-        </svg>
-        <p className="text-xl font-semibold">Loading...</p>
+      <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-br from-blue-50 to-teal-100">
+        <Loader2 className="w-10 h-10 text-teal-600 animate-spin mb-4" />
+        <p className="text-xl font-semibold text-teal-700">Loading dentists...</p>
       </div>
     );
   }
@@ -297,7 +320,7 @@ const DentistRecords = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredDentists.map((dentist, index) => (
+                {currentDentists.map((dentist, index) => (
                   <tr
                     key={dentist._id}
                     className={`${
@@ -324,7 +347,7 @@ const DentistRecords = () => {
                     </td>
                   </tr>
                 ))}
-                {filteredDentists.length === 0 && (
+                {currentDentists.length === 0 && (
                   <tr>
                     <td
                       colSpan="6"
@@ -337,8 +360,28 @@ const DentistRecords = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-6 space-x-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-4 py-2 rounded-md text-sm font-medium ${
+                    page === currentPage
+                      ? "bg-teal-500 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-teal-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+      <Footer />
     </>
   );
 };

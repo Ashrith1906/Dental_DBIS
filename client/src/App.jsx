@@ -22,6 +22,7 @@ import Profile from "./components/Patients/Profile";
 import PatientReport from "./components/Patients/PatientReport";
 import Payments from "./components/Patients/Payments";
 import ReportD from "./components/Dentists/ReportsD";
+import HomePage from "./components/HomePage";
 
 const App = () => {
   return (
@@ -39,7 +40,7 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<HomePage/>} />
 
           <Route
             path="/dentist"

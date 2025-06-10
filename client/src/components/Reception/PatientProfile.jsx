@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import ReceptionNavbar from "./ReceptionNavbar";
+import Footer from "../Footer";
 
 const PatientProfile = () => {
   const [formData, setFormData] = useState({
@@ -156,7 +157,7 @@ const PatientProfile = () => {
                   name={name}
                   value={formData[name]}
                   onChange={handleChange}
-                  rows={3}
+                  rows={2}
                   className="mt-1 w-full p-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-400"
                   required
                 />
@@ -175,6 +176,7 @@ const PatientProfile = () => {
           </form>
         </div>
       </div>
+      <Footer/>
     </div>
   );
 };

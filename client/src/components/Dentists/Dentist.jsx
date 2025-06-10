@@ -10,18 +10,20 @@
 //   FaCheckCircle,
 //   FaTimesCircle,
 // } from "react-icons/fa";
+// import toast from "react-hot-toast";
+// import { Loader2 } from "lucide-react";
+// import Footer from "../Footer";
 
 // const Dentist = () => {
 //   const { dentistId } = useAuth();
 //   const [appointments, setAppointments] = useState([]);
 //   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   const [dentistName, setDentistName] = useState(""); // Store the dentist's name
+//   const [dentistName, setDentistName] = useState("");
 
 //   useEffect(() => {
 //     const fetchDentistProfile = async () => {
 //       if (!dentistId) {
-//         setError("Dentist ID is not available.");
+//         toast.error("Dentist ID is not available.");
 //         setLoading(false);
 //         return;
 //       }
@@ -29,15 +31,13 @@
 //       try {
 //         const response = await axios.get(
 //           `${import.meta.env.VITE_API_BASE_URL}profiles/dentist`,
-//           {
-//             params: { dentistId },
-//           }
+//           { params: { dentistId } }
 //         );
 //         if (response.data && response.data.dentist) {
-//           setDentistName(response.data.dentist.name); // Set the dentist's name
+//           setDentistName(response.data.dentist.name);
 //         }
-//       } catch (err) {
-//         setError("Failed to fetch dentist profile.");
+//       } catch {
+//         toast.error("Failed to fetch dentist profile.");
 //       }
 //     };
 
@@ -47,7 +47,7 @@
 //   useEffect(() => {
 //     const fetchAppointments = async () => {
 //       if (!dentistId) {
-//         setError("Dentist ID is not available.");
+//         toast.error("Dentist ID is not available.");
 //         setLoading(false);
 //         return;
 //       }
@@ -58,9 +58,9 @@
 //             import.meta.env.VITE_API_BASE_URL
 //           }appointments/getAllAppointmentsByDentistID?dentistId=${dentistId}`
 //         );
-//         setAppointments(response.data.appointments || []); // Ensure an empty array if no data
-//       } catch (err) {
-//         // setError("Failed to fetch appointments.");
+//         setAppointments(response.data.appointments || []);
+//       } catch {
+//         toast.error("Failed to fetch appointments.");
 //       } finally {
 //         setLoading(false);
 //       }
@@ -75,36 +75,20 @@
 //   };
 
 //   const pastAppointments = appointments.filter((apt) => {
-//     // Construct the appointment date-time in IST
 //     const aptDateTimeStr = new Date(
 //       `${apt.apt_date.split("T")[0]}T${apt.apt_time}:00`
 //     );
 //     const aptDateTimeIST = getISTDate(aptDateTimeStr);
-
-//     // Current date-time in IST
 //     const currentDateTimeIST = getISTDate(new Date());
-
-//     console.log("Comparing Appointment Time (IST):", aptDateTimeIST);
-//     console.log("Current Time (IST):", currentDateTimeIST);
-
-//     // Compare the appointment's IST date/time with the current IST date/time
 //     return aptDateTimeIST < currentDateTimeIST;
 //   });
 
 //   const upcomingAppointments = appointments.filter((apt) => {
-//     // Construct the appointment date-time in IST
 //     const aptDateTimeStr = new Date(
 //       `${apt.apt_date.split("T")[0]}T${apt.apt_time}:00`
 //     );
 //     const aptDateTimeIST = getISTDate(aptDateTimeStr);
-
-//     // Current date-time in IST
 //     const currentDateTimeIST = getISTDate(new Date());
-
-//     console.log("Comparing Appointment Time (IST):", aptDateTimeIST);
-//     console.log("Current Time (IST):", currentDateTimeIST);
-
-//     // Compare the appointment's IST date/time with the current IST date/time
 //     return aptDateTimeIST >= currentDateTimeIST;
 //   });
 
@@ -154,6 +138,17 @@
 //     </div>
 //   );
 
+//   if (loading) {
+//     return (
+//       <>
+//         <DentistNavbar />
+//         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-teal-100">
+//           <Loader2 className="h-6 w-6 animate-spin text-teal-600" />
+//         </div>
+//       </>
+//     );
+//   }
+
 //   return (
 //     <>
 //       <DentistNavbar />
@@ -162,12 +157,6 @@
 //           <h1 className="text-4xl font-extrabold text-teal-700 text-center mb-10">
 //             Welcome, {dentistName || "Dentist"}!
 //           </h1>
-
-//           {error && (
-//             <div className="text-center mb-6">
-//               <p className="text-red-500 font-medium">Error: {error}</p>
-//             </div>
-//           )}
 
 //           <div className="grid gap-10">
 //             {/* Upcoming Appointments */}
@@ -200,6 +189,7 @@
 //           </div>
 //         </div>
 //       </div>
+//       <Footer/>
 //     </>
 //   );
 // };
@@ -219,35 +209,19 @@ import {
   FaTimesCircle,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
+import Footer from "../Footer";
 
-const Spinner = () => (
-  <svg
-    className="animate-spin h-10 w-10 text-teal-500 mx-auto"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    />
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-    />
-  </svg>
-);
+const ITEMS_PER_PAGE = 6;
 
 const Dentist = () => {
   const { dentistId } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dentistName, setDentistName] = useState("");
+
+  const [upcomingPage, setUpcomingPage] = useState(1);
+  const [pastPage, setPastPage] = useState(1);
 
   useEffect(() => {
     const fetchDentistProfile = async () => {
@@ -321,6 +295,15 @@ const Dentist = () => {
     return aptDateTimeIST >= currentDateTimeIST;
   });
 
+  const paginate = (data, page) =>
+    data.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+
+  const paginatedUpcoming = paginate(upcomingAppointments, upcomingPage);
+  const paginatedPast = paginate(pastAppointments, pastPage);
+
+  const totalUpcomingPages = Math.ceil(upcomingAppointments.length / ITEMS_PER_PAGE);
+  const totalPastPages = Math.ceil(pastAppointments.length / ITEMS_PER_PAGE);
+
   const renderAppointments = (appointments) => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
       {appointments.map((apt) => (
@@ -367,12 +350,36 @@ const Dentist = () => {
     </div>
   );
 
+const renderPagination = (currentPage, totalPages, setPage) => (
+  <div className="flex flex-wrap justify-center items-center mt-6 gap-4 text-sm sm:text-base">
+    <button
+      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+      className="w-28 sm:w-32 px-4 py-2 rounded-md bg-teal-500 text-white font-medium hover:bg-teal-600 disabled:bg-gray-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-all duration-200"
+    >
+      Previous
+    </button>
+
+    <span className="text-teal-800 font-medium text-center">
+      Page {currentPage} of {totalPages}
+    </span>
+
+    <button
+      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+      disabled={currentPage === totalPages}
+      className="w-28 sm:w-32 px-4 py-2 rounded-md bg-teal-500 text-white font-medium hover:bg-teal-600 disabled:bg-gray-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-all duration-200"
+    >
+      Next
+    </button>
+  </div>
+);
+
   if (loading) {
     return (
       <>
         <DentistNavbar />
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-teal-100">
-          <Spinner />
+          <Loader2 className="h-6 w-6 animate-spin text-teal-600" />
         </div>
       </>
     );
@@ -395,7 +402,10 @@ const Dentist = () => {
                 Upcoming Appointments
               </h2>
               {upcomingAppointments.length > 0 ? (
-                renderAppointments(upcomingAppointments)
+                <>
+                  {renderAppointments(paginatedUpcoming)}
+                  {renderPagination(upcomingPage, totalUpcomingPages, setUpcomingPage)}
+                </>
               ) : (
                 <p className="text-gray-500 text-sm">
                   No upcoming appointments.
@@ -410,7 +420,10 @@ const Dentist = () => {
                 Past Appointments
               </h2>
               {pastAppointments.length > 0 ? (
-                renderAppointments(pastAppointments)
+                <>
+                  {renderAppointments(paginatedPast)}
+                  {renderPagination(pastPage, totalPastPages, setPastPage)}
+                </>
               ) : (
                 <p className="text-gray-500 text-sm">No past appointments.</p>
               )}
@@ -418,6 +431,7 @@ const Dentist = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 };

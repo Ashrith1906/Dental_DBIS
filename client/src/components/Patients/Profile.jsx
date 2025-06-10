@@ -198,14 +198,14 @@
 //               <label className="block text-sm font-medium text-teal-900 mb-1">
 //                 Phone Number *
 //               </label>
-//               <input
-//                 type="text"
-//                 name="phone_no"
-//                 value={formData.phone_no}
-//                 onChange={handleChange}
-//                 maxLength={10}
-//                 className="w-full p-3 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-400"
-//               />
+// <input
+//   type="text"
+//   name="phone_no"
+//   value={formData.phone_no}
+//   onChange={handleChange}
+//   maxLength={10}
+//   className="w-full p-3 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-400"
+// />
 //             </div>
 
 //             {/* Past History */}
@@ -273,6 +273,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
 import Navbar from "./PatientNavbar";
 import { Loader2 } from "lucide-react";
+import Footer from "../Footer";
 
 const PatientProfile = () => {
   const { patientId } = useAuth();
@@ -397,26 +398,28 @@ const PatientProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-100">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-teal-100">
       <Navbar />
-      <div className="flex justify-center items-center py-12 px-4">
+      {/* Main Content */}
+      <div className="flex-grow w-full max-w-3xl mx-auto px-6 py-4">
         <div className="w-full max-w-2xl p-8 bg-white border border-gray-200 rounded-2xl shadow-2xl">
           <h2 className="text-3xl font-extrabold text-center text-teal-700 mb-6">
             {isUpdating ? "Update" : "Create"} Your Profile
           </h2>
 
           {loading ? (
-            <div className="flex justify-center text-teal-600">
+            <div className="flex justify-center text-teal-600 py-10">
               <Loader2 className="animate-spin w-6 h-6" />
-              <span className="ml-2">Loading profile...</span>
+              <span className="ml-2 text-lg font-medium">
+                Loading profile...
+              </span>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Input fields */}
+              {/* Input Fields */}
               {[
                 { label: "Name", name: "name", type: "text" },
                 { label: "Date of Birth", name: "dob", type: "date" },
-                { label: "Phone Number", name: "phone_no", type: "text" },
               ].map(({ label, name, type }) => (
                 <div key={name}>
                   <label className="block text-sm font-medium text-teal-900 mb-1">
@@ -432,7 +435,29 @@ const PatientProfile = () => {
                 </div>
               ))}
 
-              {/* Gender */}
+              {/* Phone Number - Special Handling */}
+              <div>
+                <label className="block text-sm font-medium text-teal-900 mb-1">
+                  Phone Number *
+                </label>
+                <input
+                  type="text"
+                  name="phone_no"
+                  value={formData.phone_no}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "");
+                    if (digits.length <= 10) {
+                      setFormData((prev) => ({ ...prev, phone_no: digits }));
+                    }
+                  }}
+                  inputMode="numeric"
+                  maxLength={10}
+                  className="w-full p-3 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                  required
+                />
+              </div>
+
+              {/* Gender Select */}
               <div>
                 <label className="block text-sm font-medium text-teal-900 mb-1">
                   Gender *
@@ -464,12 +489,13 @@ const PatientProfile = () => {
                     name={name}
                     value={formData[name]}
                     onChange={handleChange}
-                    rows={3}
+                    rows={2}
                     className="w-full p-3 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-400"
                   />
                 </div>
               ))}
 
+              {/* Submit Button */}
               <div className="pt-4">
                 <button
                   type="submit"
@@ -486,6 +512,7 @@ const PatientProfile = () => {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

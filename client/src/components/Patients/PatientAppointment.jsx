@@ -1,7 +1,8 @@
-// import { useEffect, useState } from "react";
+// import { useEffect, useState, useRef } from "react";
 // import axios from "axios";
 // import { useAuth } from "../contexts/AuthContext";
 // import toast from "react-hot-toast";
+// import { Loader2 } from "lucide-react";
 
 // const PatientAppointment = () => {
 //   const { patientId } = useAuth();
@@ -14,9 +15,13 @@
 //   const [reason, setReason] = useState("");
 //   const [loading, setLoading] = useState(true);
 //   const [slotsLoading, setSlotsLoading] = useState(false);
-//   const [error, setError] = useState("");
+//   const [booking, setBooking] = useState(false);
 
-//   // Fetch patient and dentists
+//   const dentistToastId = useRef(null);
+//   const profileToastId = useRef(null);
+//   const slotsToastId = useRef(null);
+//   const bookingToastId = useRef(null);
+
 //   useEffect(() => {
 //     const fetchData = async () => {
 //       try {
@@ -27,26 +32,37 @@
 //           axios.get(`${import.meta.env.VITE_API_BASE_URL}patient/${patientId}`),
 //         ]);
 
-//         // Handle dentists
 //         if (dentistRes.status === "fulfilled") {
 //           setDentists(dentistRes.value.data.dentists || []);
 //         } else {
-//           toast.error("Failed to fetch dentists list.");
+//           if (!dentistToastId.current) {
+//             dentistToastId.current = toast.error(
+//               "Failed to fetch dentists list."
+//             );
+//           }
 //         }
 
-//         // Handle patient
 //         if (patientRes.status === "fulfilled") {
 //           setPatient(patientRes.value.data.patient);
 //         } else if (
 //           patientRes.reason.response &&
 //           patientRes.reason.response.status === 404
 //         ) {
-//           toast.info(
-//             "Please complete your profile before booking an appointment."
-//           );
-//           setPatient(null); // optional, just to be safe
+//           if (!profileToastId.current) {
+//             profileToastId.current = toast(
+//               "Please complete your profile before booking.",
+//               {
+//                 icon: "⚠️",
+//               }
+//             );
+//           }
+//           setPatient(null);
 //         } else {
-//           toast.error("Error fetching your profile.");
+//           if (!profileToastId.current) {
+//             profileToastId.current = toast.error(
+//               "Error fetching your profile."
+//             );
+//           }
 //         }
 //       } catch (err) {
 //         toast.error("Unexpected error loading data.");
@@ -58,30 +74,29 @@
 //     fetchData();
 //   }, [patientId]);
 
-//   // Fetch available slots
 //   useEffect(() => {
 //     if (selectedDentistId && selectedDate) {
 //       setSlotsLoading(true);
 //       const url = `${
 //         import.meta.env.VITE_API_BASE_URL
 //       }appointments/${selectedDentistId}/available-slots/${selectedDate}`;
-//       console.log("Sending request to:", url);
+
 //       axios
 //         .get(url)
 //         .then((res) => {
-//           console.log("Received response:", res.data);
 //           setAvailableTimeSlots(res.data.availableSlots || []);
 //         })
-//         .catch((err) => {
-//           console.error("Error fetching slots:", err);
+//         .catch(() => {
+//           if (!slotsToastId.current) {
+//             slotsToastId.current = toast.error("Could not load slots.");
+//           }
 //           setAvailableTimeSlots([]);
-//           setError("Could not load slots.");
 //         })
 //         .finally(() => setSlotsLoading(false));
 //     }
 //   }, [selectedDentistId, selectedDate]);
 
-//   const handleAppointment = () => {
+//   const handleAppointment = async () => {
 //     if (!selectedDentistId || !selectedDate || !selectedTimeSlot || !reason) {
 //       toast.error("Please complete all fields.");
 //       return;
@@ -95,31 +110,33 @@
 //       reason,
 //     };
 
-//     console.log("Creating appointment with:", appointmentData);
-
-//     axios
-//       .post(
+//     setBooking(true);
+//     try {
+//       await axios.post(
 //         `${import.meta.env.VITE_API_BASE_URL}appointments/create`,
 //         appointmentData
-//       )
-//       .then(() => {
-//         toast.success("Appointment booked successfully!");
-//         setSelectedDate("");
-//         setSelectedTimeSlot("");
-//         setReason("");
-//         setAvailableTimeSlots([]);
-//       })
-//       .catch((err) => {
-//         const errorMessage =
-//           err.response?.data?.message || "Failed to create appointment.";
-//         Swal.fire({ icon: "error", title: "Error", text: errorMessage });
-//       });
+//       );
+//       toast.success("Appointment booked successfully!");
+//       setSelectedDate("");
+//       setSelectedTimeSlot("");
+//       setReason("");
+//       setAvailableTimeSlots([]);
+//     } catch (err) {
+//       toast.error(
+//         err.response?.data?.message || "Failed to create appointment."
+//       );
+//     } finally {
+//       setBooking(false);
+//     }
 //   };
 
 //   if (loading) {
 //     return (
-//       <div className="text-center text-lg text-teal-600 font-medium">
-//         Loading profile...
+//       <div className="min-h-screen flex justify-center items-center">
+//         <div className="flex items-center gap-3 text-lg text-teal-600 font-medium">
+//           <Loader2 className="h-6 w-6 animate-spin text-teal-600" />
+//           Checking profile...
+//         </div>
 //       </div>
 //     );
 //   }
@@ -189,8 +206,9 @@
 
 //           {/* Time Slots */}
 //           {selectedDate && slotsLoading && (
-//             <div className="text-sm text-gray-600">
-//               Loading available slots...
+//             <div className="text-sm text-gray-600 flex items-center gap-2">
+//               <Loader2 className="h-6 w-6 animate-spin text-teal-600" /> Loading
+//               available slots...
 //             </div>
 //           )}
 
@@ -215,9 +233,17 @@
 //                   </select>
 //                 </div>
 //               ) : (
-//                 <div className="text-red-500 text-sm font-medium">
-//                   Sorry, the dentist is not available on {selectedDate}.
-//                 </div>
+//                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 shadow-sm flex items-start gap-3">
+//   <span className="text-2xl">😕</span>
+//   <div>
+//     <p className="font-semibold">
+//       No slots available for <span className="text-teal-700">{selectedDate}</span>.
+//     </p>
+//     <p className="text-sm mt-1">
+//       The dentist hasn't opened their schedule for this day. Please try another date or select a different dentist.
+//     </p>
+//   </div>
+// </div>
 //               )}
 //             </>
 //           )}
@@ -240,11 +266,18 @@
 
 //           {/* Submit Button */}
 //           <button
-//             className="w-full bg-teal-500 hover:bg-teal-600 text-white text-base font-semibold py-3 rounded-xl shadow-md transition duration-200 disabled:opacity-50"
+//             className="w-full bg-teal-500 hover:bg-teal-600 text-white text-base font-semibold py-3 rounded-xl shadow-md transition duration-200 disabled:opacity-50 flex justify-center items-center gap-2"
 //             onClick={handleAppointment}
-//             disabled={!selectedTimeSlot || !reason}
+//             disabled={booking || !selectedTimeSlot || !reason}
 //           >
-//             Book your Appointment
+//             {booking ? (
+//               <>
+//                 <Loader2 className="h-6 w-6 animate-spin text-teal-600" />{" "}
+//                 Booking...
+//               </>
+//             ) : (
+//               "Book your Appointment"
+//             )}
 //           </button>
 //         </div>
 //       </div>
@@ -254,33 +287,12 @@
 
 // export default PatientAppointment;
 
+
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
-
-const Spinner = () => (
-  <svg
-    className="animate-spin h-5 w-5 text-white"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    />
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-    />
-  </svg>
-);
+import { Loader2 } from "lucide-react";
 
 const PatientAppointment = () => {
   const { patientId } = useAuth();
@@ -295,6 +307,7 @@ const PatientAppointment = () => {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [booking, setBooking] = useState(false);
 
+  // Toast refs to avoid duplicate alerts
   const dentistToastId = useRef(null);
   const profileToastId = useRef(null);
   const slotsToastId = useRef(null);
@@ -304,9 +317,7 @@ const PatientAppointment = () => {
     const fetchData = async () => {
       try {
         const [dentistRes, patientRes] = await Promise.allSettled([
-          axios.get(
-            `${import.meta.env.VITE_API_BASE_URL}profiles/getAllDentists`
-          ),
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}profiles/getAllDentists`),
           axios.get(`${import.meta.env.VITE_API_BASE_URL}patient/${patientId}`),
         ]);
 
@@ -314,32 +325,24 @@ const PatientAppointment = () => {
           setDentists(dentistRes.value.data.dentists || []);
         } else {
           if (!dentistToastId.current) {
-            dentistToastId.current = toast.error(
-              "Failed to fetch dentists list."
-            );
+            dentistToastId.current = toast.error("Failed to fetch dentists list.");
           }
         }
 
         if (patientRes.status === "fulfilled") {
           setPatient(patientRes.value.data.patient);
         } else if (
-          patientRes.reason.response &&
-          patientRes.reason.response.status === 404
+          patientRes.reason?.response?.status === 404
         ) {
           if (!profileToastId.current) {
             profileToastId.current = toast(
               "Please complete your profile before booking.",
-              {
-                icon: "⚠️",
-              }
+              { icon: "⚠️" }
             );
           }
-          setPatient(null);
         } else {
           if (!profileToastId.current) {
-            profileToastId.current = toast.error(
-              "Error fetching your profile."
-            );
+            profileToastId.current = toast.error("Error fetching your profile.");
           }
         }
       } catch (err) {
@@ -355,9 +358,7 @@ const PatientAppointment = () => {
   useEffect(() => {
     if (selectedDentistId && selectedDate) {
       setSlotsLoading(true);
-      const url = `${
-        import.meta.env.VITE_API_BASE_URL
-      }appointments/${selectedDentistId}/available-slots/${selectedDate}`;
+      const url = `${import.meta.env.VITE_API_BASE_URL}appointments/${selectedDentistId}/available-slots/${selectedDate}`;
 
       axios
         .get(url)
@@ -389,20 +390,22 @@ const PatientAppointment = () => {
     };
 
     setBooking(true);
+    if (bookingToastId.current) toast.dismiss(bookingToastId.current);
+    bookingToastId.current = toast.loading("Booking your appointment...");
+
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}appointments/create`,
-        appointmentData
-      );
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}appointments/create`, appointmentData);
+      toast.dismiss(bookingToastId.current);
+      bookingToastId.current = null;
       toast.success("Appointment booked successfully!");
       setSelectedDate("");
       setSelectedTimeSlot("");
       setReason("");
       setAvailableTimeSlots([]);
     } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Failed to create appointment."
-      );
+      toast.dismiss(bookingToastId.current);
+      bookingToastId.current = null;
+      toast.error(err.response?.data?.message || "Failed to create appointment.");
     } finally {
       setBooking(false);
     }
@@ -410,8 +413,11 @@ const PatientAppointment = () => {
 
   if (loading) {
     return (
-      <div className="text-center text-lg text-teal-600 font-medium py-10">
-        <Spinner /> Loading profile...
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="flex items-center gap-3 text-lg text-teal-600 font-medium">
+          <Loader2 className="h-6 w-6 animate-spin text-teal-600" />
+          Checking profile...
+        </div>
       </div>
     );
   }
@@ -425,23 +431,15 @@ const PatientAppointment = () => {
 
         {patient && (
           <div className="mb-6 text-gray-700 space-y-2">
-            <p>
-              <span className="font-semibold text-teal-900">Patient Name:</span>{" "}
-              {patient.name}
-            </p>
-            <p>
-              <span className="font-semibold text-teal-900">Age:</span>{" "}
-              {patient.age}
-            </p>
+            <p><span className="font-semibold text-teal-900">Patient Name:</span> {patient.name}</p>
+            <p><span className="font-semibold text-teal-900">Age:</span> {patient.age}</p>
           </div>
         )}
 
         <div className="space-y-5">
           {/* Dentist Select */}
           <div>
-            <label className="block text-sm font-medium text-teal-900 mb-1">
-              Select Dentist
-            </label>
+            <label className="block text-sm font-medium text-teal-900 mb-1">Select Dentist</label>
             <select
               className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
               value={selectedDentistId}
@@ -464,9 +462,7 @@ const PatientAppointment = () => {
           {/* Date Picker */}
           {selectedDentistId && (
             <div>
-              <label className="block text-sm font-medium text-teal-900 mb-1">
-                Select Date
-              </label>
+              <label className="block text-sm font-medium text-teal-900 mb-1">Select Date</label>
               <input
                 type="date"
                 className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
@@ -482,7 +478,8 @@ const PatientAppointment = () => {
           {/* Time Slots */}
           {selectedDate && slotsLoading && (
             <div className="text-sm text-gray-600 flex items-center gap-2">
-              <Spinner /> Loading available slots...
+              <Loader2 className="h-6 w-6 animate-spin text-teal-600" />
+              Loading available slots...
             </div>
           )}
 
@@ -500,15 +497,21 @@ const PatientAppointment = () => {
                   >
                     <option value="">Choose a time slot</option>
                     {availableTimeSlots.map((slot, idx) => (
-                      <option key={idx} value={slot}>
-                        {slot}
-                      </option>
+                      <option key={idx} value={slot}>{slot}</option>
                     ))}
                   </select>
                 </div>
               ) : (
-                <div className="text-red-500 text-sm font-medium">
-                  Sorry, the dentist is not available on {selectedDate}.
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 shadow-sm flex items-start gap-3">
+                  <span className="text-2xl">😕</span>
+                  <div>
+                    <p className="font-semibold">
+                      No slots available for <span className="text-teal-700">{selectedDate}</span>.
+                    </p>
+                    <p className="text-sm mt-1">
+                      The dentist hasn't opened their schedule for this day. Try another date or select a different dentist.
+                    </p>
+                  </div>
                 </div>
               )}
             </>
@@ -517,9 +520,7 @@ const PatientAppointment = () => {
           {/* Reason Textarea */}
           {selectedDate && (
             <div>
-              <label className="block text-sm font-medium text-teal-900 mb-1">
-                Reason for Appointment
-              </label>
+              <label className="block text-sm font-medium text-teal-900 mb-1">Reason for Appointment</label>
               <textarea
                 className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
                 placeholder="Enter reason..."
@@ -538,7 +539,8 @@ const PatientAppointment = () => {
           >
             {booking ? (
               <>
-                <Spinner /> Booking...
+                <Loader2 className="h-6 w-6 animate-spin text-white" />
+                Booking...
               </>
             ) : (
               "Book your Appointment"

@@ -300,6 +300,8 @@ import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
 import DentistNavbar from "./DentistNavbar";
+import { Loader2 } from "lucide-react";
+import Footer from "../Footer";
 
 // Helper function to generate 20-minute time slots
 const generateSlots = (startTime, endTime) => {
@@ -589,7 +591,9 @@ const DentistSchedule = () => {
                 }`}
                 disabled={loading}
               >
-                {loading && <Spinner />}
+                {loading && (
+                  <Loader2 className="h-6 w-6 animate-spin text-teal-600" />
+                )}
                 {loading ? "Updating..." : "Save"}
               </button>
             </div>
@@ -616,6 +620,7 @@ const DentistSchedule = () => {
           )}
         </div>
       </div>
+      <Footer/>
     </>
   );
 };

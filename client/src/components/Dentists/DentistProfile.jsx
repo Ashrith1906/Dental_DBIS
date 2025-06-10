@@ -182,30 +182,8 @@ import toast from "react-hot-toast";
 import DentistNavbar from "./DentistNavbar";
 import { useAuth } from "../contexts/AuthContext";
 import { FaUser, FaPhone, FaBriefcase, FaMedkit } from "react-icons/fa";
-
-// Spinner component
-const Spinner = () => (
-  <svg
-    className="animate-spin h-6 w-6 text-white mx-auto"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    />
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-    />
-  </svg>
-);
+import { Loader2 } from "lucide-react";
+import Footer from "../Footer";
 
 const DentistProfile = () => {
   const { dentistId } = useAuth();
@@ -231,7 +209,7 @@ const DentistProfile = () => {
           { params: { dentistId } }
         );
 
-        if (response.data && response.data.dentist) {
+        if (response.data?.dentist) {
           const profile = response.data.dentist;
           setFormData({
             name: profile.name || "",
@@ -252,7 +230,7 @@ const DentistProfile = () => {
       } catch (error) {
         toast.dismiss(fetchToastId.current);
         fetchToastId.current = toast.error(
-          `Failed to fetch dentist profile: ${
+          `Failed to fetch profile: ${
             error.response?.data?.message || error.message
           }`
         );
@@ -261,9 +239,7 @@ const DentistProfile = () => {
       }
     };
 
-    if (dentistId) {
-      fetchProfile();
-    }
+    if (dentistId) fetchProfile();
   }, [dentistId]);
 
   const handleChange = (e) => {
@@ -293,7 +269,6 @@ const DentistProfile = () => {
           ? "Profile updated successfully!"
           : "Profile created successfully!"
       );
-
       setIsUpdating(true);
     } catch (error) {
       toast.dismiss(submitToastId.current);
@@ -307,110 +282,85 @@ const DentistProfile = () => {
     }
   };
 
-  if (loadingProfile) {
-    return (
-      <>
-        <DentistNavbar />
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-teal-100">
-          <Spinner />
-        </div>
-      </>
-    );
-  }
-
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-100">
       <DentistNavbar />
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-teal-100 py-12 px-4">
-        <div className="max-w-2xl mx-auto bg-white border border-gray-300 rounded-2xl shadow-2xl p-8">
-          <h2 className="text-3xl font-extrabold text-teal-700 text-center mb-6">
+      <div className="flex justify-center items-center py-12 px-4">
+        <div className="w-full max-w-2xl p-8 bg-white border border-gray-200 rounded-2xl shadow-2xl">
+          <h2 className="text-3xl font-extrabold text-center text-teal-700 mb-6">
             {isUpdating ? "Update" : "Create"} Your Profile
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Name */}
-            <div>
-              <label className="flex items-center text-sm font-semibold text-teal-900 mb-1">
-                <FaUser className="text-teal-500 mr-2" /> Full Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-400 outline-none"
-                required
-              />
+          {loadingProfile ? (
+            <div className="flex justify-center text-teal-600">
+              <Loader2 className="animate-spin w-6 h-6" />
+              <span className="ml-2">Loading profile...</span>
             </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Input Fields */}
+              {[
+                {
+                  icon: <FaUser />,
+                  label: "Full Name",
+                  name: "name",
+                  type: "text",
+                },
+                {
+                  icon: <FaPhone />,
+                  label: "Phone Number",
+                  name: "phone_no",
+                  type: "text",
+                  maxLength: 10,
+                },
+                {
+                  icon: <FaBriefcase />,
+                  label: "Experience",
+                  name: "experience",
+                  type: "text",
+                },
+                {
+                  icon: <FaMedkit />,
+                  label: "Specialization",
+                  name: "specialization",
+                  type: "text",
+                },
+              ].map(({ icon, label, name, type, maxLength }) => (
+                <div key={name}>
+                  <label className="flex items-center text-sm font-semibold text-teal-900 mb-1">
+                    <span className="text-teal-500 mr-2">{icon}</span> {label}
+                  </label>
+                  <input
+                    type={type}
+                    name={name}
+                    value={formData[name]}
+                    onChange={handleChange}
+                    maxLength={maxLength}
+                    className="w-full p-3 rounded-xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    required
+                  />
+                </div>
+              ))}
 
-            {/* Phone Number */}
-            <div>
-              <label className="flex items-center text-sm font-semibold text-teal-900 mb-1">
-                <FaPhone className="text-teal-500 mr-2" /> Phone Number
-              </label>
-              <input
-                type="text"
-                name="phone_no"
-                value={formData.phone_no}
-                onChange={handleChange}
-                maxLength={10}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-400 outline-none"
-                required
-              />
-            </div>
-
-            {/* Experience */}
-            <div>
-              <label className="flex items-center text-sm font-semibold text-teal-900 mb-1">
-                <FaBriefcase className="text-teal-500 mr-2" /> Experience
-              </label>
-              <input
-                type="text"
-                name="experience"
-                value={formData.experience}
-                onChange={handleChange}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-400 outline-none"
-                required
-              />
-            </div>
-
-            {/* Specialization */}
-            <div>
-              <label className="flex items-center text-sm font-semibold text-teal-900 mb-1">
-                <FaMedkit className="text-teal-500 mr-2" /> Specialization
-              </label>
-              <input
-                type="text"
-                name="specialization"
-                value={formData.specialization}
-                onChange={handleChange}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-400 outline-none"
-                required
-              />
-            </div>
-
-            {/* Submit Button */}
-            <div>
-              <button
-                type="submit"
-                disabled={submitting}
-                className={`w-full py-3 bg-teal-500 hover:bg-teal-600 text-white text-base font-semibold rounded-xl shadow-md transition duration-300 flex justify-center items-center ${
-                  submitting ? "cursor-not-allowed opacity-70" : ""
-                }`}
-              >
-                {submitting ? (
-                  <Spinner />
-                ) : isUpdating ? (
-                  "Update Profile"
-                ) : (
-                  "Create Profile"
-                )}
-              </button>
-            </div>
-          </form>
+              {/* Submit Button */}
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full py-3 bg-teal-500 hover:bg-teal-600 text-white text-base font-semibold rounded-xl shadow-md transition disabled:opacity-60 flex items-center justify-center"
+                >
+                  {submitting && (
+                    <Loader2 className="animate-spin h-5 w-5 mr-2 text-white" />
+                  )}
+                  {isUpdating ? "Update Profile" : "Save Profile"}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
-    </>
+      <Footer/>
+    </div>
   );
 };
 

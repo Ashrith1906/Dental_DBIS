@@ -463,6 +463,9 @@ import {
   FaVenusMars,
   FaBirthdayCake,
 } from "react-icons/fa";
+import ReportLayout from "../ReportLayout";
+import { renderToStaticMarkup } from "react-dom/server";
+import Footer from "../Footer";
 
 const Report = () => {
   const [aptID, setAptID] = useState("");
@@ -476,7 +479,7 @@ const Report = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingReport, setSubmittingReport] = useState(false);
 
   // Loading states for data fetching
   const [loadingAppointments, setLoadingAppointments] = useState(false);
@@ -622,7 +625,7 @@ const Report = () => {
     }
 
     setError("");
-    setIsSubmitting(true);
+    setSubmittingReport(true);
 
     const endpoint = isEditing
       ? `${import.meta.env.VITE_API_BASE_URL}report/update`
@@ -654,7 +657,7 @@ const Report = () => {
         id: toastIds.submitReport,
       });
     } finally {
-      setIsSubmitting(false);
+      setSubmittingReport(false);
     }
   };
 
@@ -678,195 +681,74 @@ const Report = () => {
   };
 
   const handlePrint = () => {
-    if (!reportDetails || !appointmentDetails) {
-      toast.error("No complete details available to print.");
+    if (!appointmentDetails || !reportDetails) {
+      toast.error("Missing appointment or report details.");
       return;
     }
 
-    const { appointment, patient, dentist } = appointmentDetails;
     const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      toast.error("Popup blocked! Please allow popups to print the report.");
+      return;
+    }
+
+    const htmlContent = renderToStaticMarkup(
+      <ReportLayout
+        appointmentDetails={appointmentDetails}
+        reportDetails={reportDetails}
+      />
+    );
+
     printWindow.document.write(`
-      <html>
-        <head>
-          <title>Report - Appointment ID: ${searchAptID}</title>
-          <style>
+    <html>
+      <head>
+        <title>Patient Report</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        <style>
+          @media print {
             body {
-              font-family: Arial, sans-serif;
-              padding: 20px;
-              color: #333;
-              background-color: #f9f9f9;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
-            .container {
-              width: 80%;
-              margin: 0 auto;
-              padding: 20px;
-              border: 1px solid #ddd;
-              border-radius: 10px;
-              background-color: #fff;
-            }
-            h1, h2 {
-              text-align: center;
-              color: #007bff;
-            }
-            .section {
-              margin-bottom: 20px;
-            }
-            .section ul {
-              list-style-type: none;
-              padding: 0;
-            }
-            .section li {
-              margin-bottom: 10px;
-            }
-            .section li span {
-              font-weight: bold;
-            }
-            .table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 20px;
-            }
-            .table th, .table td {
-              padding: 8px;
-              border: 1px solid #ddd;
-              text-align: left;
-            }
-            .total {
-              font-size: 18px;
-              font-weight: bold;
-              text-align: right;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>Report - Appointment ID: ${searchAptID}</h1>
-            
-            <div class="section">
-              <h2>Appointment Details</h2>
-              <ul>
-                <li><span>Appointment ID:</span> ${appointment.aptID}</li>
-                <li><span>Date:</span> ${new Date(
-                  appointment.date
-                ).toLocaleDateString()}</li>
-                <li><span>Time:</span> ${appointment.time}</li>
-              </ul>
-            </div>
+          }
+        </style>
+      </head>
+      <body class="bg-white p-10">
+        ${htmlContent}
+      </body>
+    </html>
+  `);
 
-            <div class="section">
-              <h2>Patient Details</h2>
-              <ul>
-                <li><span>Name:</span> ${patient.name}</li>
-                <li><span>Age:</span> ${patient.age}</li>
-                <li><span>Gender:</span> ${patient.gender}</li>
-              </ul>
-            </div>
-
-            <div class="section">
-              <h2>Dentist Details</h2>
-              <ul>
-                <li><span>Name:</span> ${dentist.name}</li>
-                <li><span>Specialization:</span> ${dentist.specialization}</li>
-              </ul>
-            </div>
-
-            <div class="section">
-              <h2>Report Details</h2>
-              <ul>
-                <li><span>Primary Diagnosis:</span> ${
-                  reportDetails.primaryDiagnosis
-                }</li>
-                <li><span>Prescription:</span> ${
-                  reportDetails.prescription
-                }</li>
-                <li><span>Procedures:</span> ${reportDetails.procedures}</li>
-              </ul>
-            </div>
-
-            <div class="text-center mt-12">
-              <p>Generated on: ${new Date().toLocaleString()}</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `);
     printWindow.document.close();
+    // printWindow.focus();
     printWindow.print();
   };
 
   const validateForm = () => {
     return (
-      reportDetails.primaryDiagnosis &&
-      reportDetails.prescription &&
-      reportDetails.procedures
+      reportDetails.primaryDiagnosis.trim() !== "" &&
+      reportDetails.prescription.trim() !== "" &&
+      reportDetails.procedures.trim() !== ""
     );
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-100">
       <ReceptionNavbar />
-      <div className="flex justify-center items-start pt-10 px-5">
-        <div className="w-full max-w-4xl bg-white p-8 rounded-2xl shadow-2xl border border-gray-300">
-          <h1 className="text-3xl font-extrabold text-teal-700 mb-6">
-            Patient Report
-          </h1>
+      <div className="max-w-3xl mx-auto p-8">
+        <h2 className="text-3xl font-extrabold text-teal-700 text-center mb-6">
+          Manage Patient Report
+        </h2>
 
-          {/* Appointment ID Dropdown */}
-          <div className="mb-6">
-            <label
-              htmlFor="appointment"
-              className="block text-sm font-semibold text-teal-900 mb-2"
-            >
-              Appointment ID
-            </label>
-            {loadingAppointments ? (
-              <div className="flex justify-center py-3">
-                <svg
-                  className="animate-spin h-6 w-6 text-teal-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8z"
-                  ></path>
-                </svg>
-              </div>
-            ) : (
-              <select
-                id="appointment"
-                className="w-full mt-1 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
-                value={aptID}
-                onChange={(e) => {
-                  setAptID(e.target.value);
-                  setSearchAptID(e.target.value);
-                }}
-              >
-                <option value="">Select Appointment ID</option>
-                {appointments.map((apt) => (
-                  <option key={apt.aptID} value={apt.aptID}>
-                    {apt.aptID}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          {/* Appointment Details */}
-          {loadingAppointmentDetails ? (
-            <div className="flex justify-center py-8 text-teal-600">
+        {/* Appointment Dropdown */}
+        <div className="mb-6 border p-6 rounded-2xl shadow-xl bg-white">
+          <label className="block text-sm font-semibold text-teal-900 mb-2">
+            Select Appointment
+          </label>
+          {loadingAppointments ? (
+            <div className="flex justify-center">
               <svg
-                className="animate-spin h-10 w-10"
+                className="animate-spin h-6 w-6 text-teal-600"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -887,125 +769,198 @@ const Report = () => {
               </svg>
             </div>
           ) : (
-            appointmentDetails && (
-              <div className="mb-8">
-                <div className="bg-white rounded-2xl shadow-xl p-6 text-teal-900">
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="flex items-center space-x-2">
-                      <FaUser className="text-teal-500" />
-                      <span className="font-semibold">
-                        {appointmentDetails.patient.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <FaVenusMars className="text-teal-500" />
-                      <span>{appointmentDetails.patient.gender}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <FaBirthdayCake className="text-teal-500" />
-                      <span>{appointmentDetails.patient.age} years</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <FaCalendarAlt className="text-teal-500" />
-                      <span>
-                        {new Date(
-                          appointmentDetails.appointment.date
-                        ).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <FaClock className="text-teal-500" />
-                      <span>{appointmentDetails.appointment.time}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <FaTooth className="text-teal-500" />
-                      <span>{appointmentDetails.dentist.name}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )
+            <select
+              id="appointment"
+              className="w-full p-3 rounded-xl bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              value={aptID}
+              onChange={(e) => {
+                setAptID(e.target.value);
+                setSearchAptID(e.target.value);
+              }}
+              disabled={loadingAppointments || submittingReport}
+            >
+              <option value="">-- Select Appointment --</option>
+              {appointments.map((apt) => (
+                <option key={apt.aptID} value={apt.aptID}>
+                  {apt.aptID}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Appointment Details */}
+        {loadingAppointmentDetails ? (
+          <div className="flex justify-center items-center h-32">
+            <svg
+              className="animate-spin h-8 w-8 text-teal-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8z"
+              ></path>
+            </svg>
+          </div>
+        ) : appointmentDetails ? (
+          <div className="bg-white p-6 rounded-2xl shadow-xl mb-6">
+            <h3 className="text-xl font-semibold text-teal-700 mb-4">
+              Appointment Details
+            </h3>
+            <ul className="space-y-2 text-gray-600">
+              <li>
+                <FaUser className="inline text-teal-500 mr-2" />
+                {appointmentDetails.patient.name}
+              </li>
+              <li>
+                <FaVenusMars className="inline text-teal-500 mr-2" /> Gender:{" "}
+                {appointmentDetails.patient.gender}
+              </li>
+              <li>
+                <FaBirthdayCake className="inline text-teal-500 mr-2" /> Age:{" "}
+                {appointmentDetails.patient.age} years
+              </li>
+              <li>
+                <FaTooth className="inline text-teal-500 mr-2" /> Dentist:{" "}
+                {appointmentDetails.dentist.name}
+              </li>
+              <li>
+                <FaCalendarAlt className="inline text-teal-500 mr-2" /> Date:{" "}
+                {new Date(
+                  appointmentDetails.appointment.date
+                ).toLocaleDateString()}
+              </li>
+              <li>
+                <FaClock className="inline text-teal-500 mr-2" /> Time:{" "}
+                {appointmentDetails.appointment.time}
+              </li>
+            </ul>
+          </div>
+        ) : null}
+
+        {/* Report Form */}
+        {(loadingReport || submittingReport) && (
+          <div className="flex items-center gap-2 text-teal-700 mb-6">
+            <svg
+              className="animate-spin h-5 w-5"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8z"
+              ></path>
+            </svg>
+            {loadingReport
+              ? "Loading report..."
+              : submittingReport
+              ? "Submitting report..."
+              : ""}
+          </div>
+        )}
+
+        <form
+          onSubmit={handleReportSubmit}
+          className="bg-white p-6 rounded-2xl shadow-2xl space-y-6"
+        >
+          <h3 className="text-xl font-semibold text-teal-700 mb-4">
+            {isEditing ? "Edit Report" : "Create Report"}
+          </h3>
+
+          <div>
+            <label className="block text-sm font-medium text-teal-900 mb-1">
+              Primary Diagnosis
+            </label>
+            <textarea
+              rows="3"
+              className="w-full bg-gray-50 p-3 rounded-xl border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              value={reportDetails.primaryDiagnosis}
+              onChange={(e) =>
+                setReportDetails({
+                  ...reportDetails,
+                  primaryDiagnosis: e.target.value,
+                })
+              }
+              disabled={loadingReport || submittingReport}
+              placeholder="Enter primary diagnosis"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-teal-900 mb-1">
+              Prescription
+            </label>
+            <textarea
+              rows="3"
+              className="w-full bg-gray-50 p-3 rounded-xl border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              value={reportDetails.prescription}
+              onChange={(e) =>
+                setReportDetails({
+                  ...reportDetails,
+                  prescription: e.target.value,
+                })
+              }
+              disabled={loadingReport || submittingReport}
+              placeholder="Enter prescription"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-teal-900 mb-1">
+              Procedures
+            </label>
+            <textarea
+              rows="3"
+              className="w-full bg-gray-50 p-3 rounded-xl border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              value={reportDetails.procedures}
+              onChange={(e) =>
+                setReportDetails({
+                  ...reportDetails,
+                  procedures: e.target.value,
+                })
+              }
+              disabled={loadingReport || submittingReport}
+              placeholder="Enter procedures"
+            />
+          </div>
+
+          {error && (
+            <p className="text-red-600 font-semibold text-center">{error}</p>
           )}
 
-          {/* Report Form */}
-          <form onSubmit={handleReportSubmit} className="space-y-6 mb-6">
-            <div>
-              <label
-                className="block font-semibold text-teal-900 mb-2"
-                htmlFor="primaryDiagnosis"
-              >
-                Primary Diagnosis
-              </label>
-              <textarea
-                id="primaryDiagnosis"
-                rows="3"
-                value={reportDetails.primaryDiagnosis}
-                onChange={(e) =>
-                  setReportDetails({
-                    ...reportDetails,
-                    primaryDiagnosis: e.target.value,
-                  })
-                }
-                className="w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
-                disabled={loadingReport}
-              />
-            </div>
-            <div>
-              <label
-                className="block font-semibold text-teal-900 mb-2"
-                htmlFor="prescription"
-              >
-                Prescription
-              </label>
-              <textarea
-                id="prescription"
-                rows="3"
-                value={reportDetails.prescription}
-                onChange={(e) =>
-                  setReportDetails({
-                    ...reportDetails,
-                    prescription: e.target.value,
-                  })
-                }
-                className="w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
-                disabled={loadingReport}
-              />
-            </div>
-            <div>
-              <label
-                className="block font-semibold text-teal-900 mb-2"
-                htmlFor="procedures"
-              >
-                Procedures
-              </label>
-              <textarea
-                id="procedures"
-                rows="3"
-                value={reportDetails.procedures}
-                onChange={(e) =>
-                  setReportDetails({
-                    ...reportDetails,
-                    procedures: e.target.value,
-                  })
-                }
-                className="w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
-                disabled={loadingReport}
-              />
-            </div>
-
-            {error && <p className="text-red-600 font-semibold">{error}</p>}
-
+          <div className="flex justify-between items-center">
             <button
               type="submit"
-              disabled={!validateForm() || isSubmitting || loadingReport}
-              className={`w-full py-3 rounded-xl text-white font-semibold transition ${
-                !validateForm() || isSubmitting || loadingReport
-                  ? "bg-teal-300 cursor-not-allowed"
-                  : "bg-teal-600 hover:bg-teal-700"
+              disabled={!validateForm() || submittingReport || loadingReport}
+              className={`px-4 py-3 font-bold rounded-xl text-white m-2 shadow-md transition ${
+                validateForm() && !submittingReport && !loadingReport
+                  ? "bg-teal-700 hover:bg-teal-900"
+                  : "bg-teal-300 cursor-not-allowed"
               }`}
             >
-              {isSubmitting ? (
-                <span className="flex items-center justify-center space-x-2">
+              {submittingReport ? (
+                <span className="flex items-center gap-2 justify-center">
                   <svg
                     className="animate-spin h-5 w-5 text-white"
                     xmlns="http://www.w3.org/2000/svg"
@@ -1026,31 +981,7 @@ const Report = () => {
                       d="M4 12a8 8 0 018-8v8z"
                     ></path>
                   </svg>
-                  <span>{isEditing ? "Updating..." : "Creating..."}</span>
-                </span>
-              ) : loadingReport ? (
-                <span className="flex items-center justify-center space-x-2">
-                  <svg
-                    className="animate-spin h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    ></path>
-                  </svg>
-                  <span>Loading...</span>
+                  Saving...
                 </span>
               ) : isEditing ? (
                 "Update Report"
@@ -1058,20 +989,20 @@ const Report = () => {
                 "Create Report"
               )}
             </button>
-          </form>
 
-          {/* Print Button */}
-          <button
-            onClick={handlePrint}
-            className="w-full py-3 rounded-xl bg-teal-500 text-white font-semibold hover:bg-teal-600 transition"
-            disabled={loadingReport || isSubmitting}
-          >
-            Print Report
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handlePrint}
+              disabled={submittingReport || loadingReport}
+              className="px-4 py-3 m-2 font-bold rounded-xl text-white bg-gray-600 hover:bg-gray-700 shadow-md transition"
+            >
+              Print Report
+            </button>
+          </div>
+        </form>
       </div>
+      <Footer/>
     </div>
   );
 };
-
 export default Report;

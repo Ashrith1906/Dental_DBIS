@@ -228,6 +228,7 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
+import Footer from "../Footer";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -289,10 +290,11 @@ const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-teal-100 px-4">
-      {/* Container with left banner + form */}
-      <div className="flex w-full max-w-4xl shadow-2xl rounded-2xl overflow-hidden bg-white">
-        {/* Left Banner */}
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-teal-100">
+      {/* Main Content */}
+      <main className="flex-grow flex items-center justify-center mb-2 px-4">
+        <div className="flex w-full max-w-4xl shadow-2xl rounded-2xl overflow-hidden bg-white">
+          {/* Left Banner */}
         <div className="hidden md:flex flex-col justify-center bg-gradient-to-br from-teal-700 to-teal-900 text-white p-10 w-1/2">
           <FaUserShield className="text-6xl mb-4" />
           <h2 className="text-5xl font-extrabold mb-3">Smile Dental Clinic</h2>
@@ -456,8 +458,13 @@ const Register = () => {
           </div>
         </div>
       </div>
+      </main>
+
+      {/* Footer stays at bottom */}
+      <Footer />
     </div>
   );
 };
+
 
 export default Register;
