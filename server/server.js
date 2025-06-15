@@ -18,6 +18,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173", // Dev frontend
+      "https://smilify.vercel.app",
       "https://smilify-xijm.onrender.com", // Prod frontend 
     ],
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
